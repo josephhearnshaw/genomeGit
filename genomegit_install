@@ -1,0 +1,58 @@
+#!/bin/bash
+
+#This file will permanently add the path to the GenomeGit directory into the PATH variable. It can be exectued anywhere, BUT this script file needs to be located
+# in the same directory where the rest of scripts are located (that is, inside the GenomeGit script folder).
+
+#Obtain the path of the installer script. This script needs to be located inside the GenomeGit folder containing the rest of scripts, that will be added to the PATH.
+SCRIPT_PATH="$( cd "$(dirname "$0")" ; pwd -P )"
+
+#Obtain the OS of the machine
+uname_output="$(uname -s)"
+case "${uname_output}" in
+	#If the user is working on Linux, create the soft link in /usr/bin/ directory.
+	Linux*)
+		#Inform the user
+		echo "Linux OS detected. Now installing GenomeGit."
+		#If there is a old installation of genomegit (if there is a symlink in the folder), remove it.
+		if [ -e /usr/bin/genomegit ]; then
+			echo "Old genomegit installation detected. Now overwriting."
+			sudo rm /usr/bin/genomegit
+		fi
+		#Create a symlink in the /usr/bin/ directory pointing at the SCRIPT_PATH
+		sudo ln -s  $SCRIPT_PATH/genomegit /usr/bin/
+		#Confirm that genomegit is installed properly.
+		if [ -e /usr/bin/genomegit ]; then
+			echo "GenomeGit installation complete!"
+		else
+			echo "GeomeGit couldn't complete installation."
+			exit 0
+		fi
+	;;
+	#If the user is working on MAC OS, create the soft link in /usr/local/bin/ directory.
+	Darwin*)
+		echo "MAC OS detected. Now installing GenomeGit."
+		#If there is a old installation of genomegit (if there is a symlink in the folder), remove it.
+		if [ -e /usr/local/bin/genomegit ]; then
+			echo "Old genomegit installation detected. Now overwriting."
+			sudo rm /usr/local/bin/genomegit
+		fi
+
+		#Create a symlink in the /usr/local/bin/ directory pointing at the SCRIPT_PATH
+		sudo ln -s  $SCRIPT_PATH/genomegit /usr/local/bin/
+		#Confirm that genomegit is installed properly.
+		if [ -e /usr/local/bin/genomegit ]; then
+			echo "GenomeGit installation complete!"
+		else
+			echo "GeomeGit couldn't complete installation."
+			exit 0
+		fi
+	;;
+	#If the user is working on something else (a.k.a windows), tell him it is not supported.
+	*)
+		echo "Your OS is not supported by GenomeGit: ${uname_output}"
+		echo "GeomeGit couldn't complete installation."
+		exit 0
+	;;
+esac
+
+

@@ -1,0 +1,69 @@
+
+Welcome to GenomeGit's help page. To execute any of the commands type: genomegit <command> --options <mandatory_arguments>.
+
+GenomeGit utilizes git and its commands, as well as the following custom commands:
+
+	add --threads --no-update <input_file>			
+			
+			Parses <input_file> into git-compatible objects and adds it to the repository. Number of threads can be specified
+			optionally for liftover (default is --threads=1). If the optional parameter --no-update is specified, no automatic
+			coordinate migration of VCF, GFF and SAM files will be performed.
+
+
+	list			
+
+			Create list of files contained in the repository at a given time for each dataset (Genome, Alignment, Variants and
+			Annotation). It will also inform of their size in MB.
+
+
+	get --dataset --sequence --region --commit-hash --message <file_name>
+
+			Reconstructs the current version of the <file_name> contained in the repository. To check the names of the files 
+			currently stored in the repository use genomegit list. Optional parameter --dataset can be used to select all files
+			contained in a specific dataset (valid input: Genome, Annotation, Alignment and Variants). Optional parameters 
+			--sequence and --region can be used to indicate a sequence name and a region of interest to be extracted. The
+			region must be specified as two integers separated with a "-". Optional parameters --commit-hash and --message can
+			be used to retrieve data from a specific version of interest by indicating the commit hash or the commit message 
+			respectively.
+
+
+	discarded <file_name>					
+
+			Returns the discarded entries of <file_name> (only available after a repository update).
+
+
+	diff --threads --message <version1> <version2>		
+
+			Show the genome assembly update summary and produce a report file for genome versions specified by commit hashes of
+			verion 1 and version 2: <version1> <version2>. Optional parameter --threads allows to choose the number of threads to
+			use if an alignment must be performed, default is --threads=1 (only considered if alignment is necessary). Optional 
+			parameter --message can be used if commit messages are provided instead of commit hashes.
+
+
+	report	--commit-hash --message				
+				
+			Create a report summarising the information contained in the repository at any given moment. Optional parameters 
+			--commit-hash and --message can be used in order to create a report for a specific version of interest by indicating
+			the commit hash or the commit message respectively.
+
+
+	delete <file_name>					
+			
+			Delete the specified <file_name> from the staging area. Extreme caution when using this command is
+			required as potential data loss migth occur.
+
+
+Below you can see the list of the most common git commands that can be used in GenomeGit (other git commands may be used as well):
+
+	init							Initialize a repository.
+
+	clone <remote_address>					Clone an existing remote repository.
+
+	commit -m <message>					Commit current changes. Commit message must be specified.
+
+	status							Show the status of the current working tree.
+
+	log							Show the commit log.
+
+See more documentation about other git commands on https://git-scm.com/doc or simply using "git help"
+

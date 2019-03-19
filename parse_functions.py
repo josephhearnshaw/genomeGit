@@ -55,7 +55,7 @@ def parse_cntg(seq,number,map_file,folder,seq_index):
 	#Return the updated index
 	return index
 
-#Define the parse scaffold function. This function will take a nucleotide sequence, the map file, the current folder and the sequence index as input parameters. 
+#Define the parse scaffold function. This function will take a nucleotide sequence, the map file, the current folder and the sequence index as input parameters.
 #It will create a folder for each scaffold, and pass each contig to the parse_cntg function.It has to return an updated index.
 def parse_scf(seq,folder,map_file,seq_index):
 	#Save the arguments
@@ -235,7 +235,7 @@ def parse_dependent_dict(DependentDict):
 		#Create subfiles for 1MB regions
 		#Write in the seqID map
 		seqID_map.write(">"+key+"\t/Sequence"+str(seq_count)+"\n")
-		#Create a folder for the sequence and open the first subfile 
+		#Create a folder for the sequence and open the first subfile
 		os.mkdir("./Sequence"+str(seq_count))
 		#Loop through the regions stored in the dictionary {seqID:{1M:[line[1:],],2M:[],}}
 		for region in DependentDict[key].keys():
@@ -253,7 +253,7 @@ def parse_dependent_dict(DependentDict):
 
 #Create a parse dataset function to parse a given dataset in a file into the repository structure
 def parse_dataset(dataset,input_path,size,update):
-	
+
 	#	PARSE A GENOME DATASET
 
 	#If the file to be parsed is a genome file.
@@ -388,7 +388,7 @@ def parse_dataset(dataset,input_path,size,update):
 		#Close the files
 		comment_file.close()
 		annotation_file.close()
-		#Use the parse dependent dict function to parse the information contained in the resulting dictionary into the repo	
+		#Use the parse dependent dict function to parse the information contained in the resulting dictionary into the repo
 		parse_dependent_dict(DependentDict=annotation_dict)
 		#If it is an update it is required to update the repomap
 		if(update):
@@ -473,7 +473,7 @@ def parse_dataset(dataset,input_path,size,update):
 		#Close the files
 		comment_file.close()
 		variants_file.close()
-		#Use the parse dependent dict function to parse the information contained in the resulting dictionary into the repo	
+		#Use the parse dependent dict function to parse the information contained in the resulting dictionary into the repo
 		parse_dependent_dict(DependentDict=variants_dict)
 		#If this is an update it is required to update the repomap
 		if(update):
@@ -595,13 +595,13 @@ def parse_dataset(dataset,input_path,size,update):
 				mapfile.write("/"+seqID_dict[seqID]+"/"+subfile+"\n")
 		#Close the map file
 		mapfile.close()
-		
+
 	#	RAISE AN ERROR
-	
+
 	#Otherwise there was a problem
 	else:
 		print("\n***INTERNAL ERROR: DATASET NOT RECOGNISED: "+dataset+"\n")
-	
+
 	#Exit the function
 	return
 
@@ -668,8 +668,6 @@ def parse_coords_file(file_path):
 			#Otherwise create a new entry in the dictionary
 			else:
 				coords_dict[line[9]]=["\t".join(line)]
-			
+
 	#Return the dictionary
 	return coords_dict
-
-

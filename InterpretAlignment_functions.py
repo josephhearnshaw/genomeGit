@@ -13,6 +13,10 @@ from threading import Thread
 from multiprocessing import Process
 from parse_functions import parse_dataset
 
+import multiprocessing
+import subprocess
+from multiprocessing import Process
+
 #Create global variables
 tabix_queries={}
 OldNewID_Dict={}
@@ -74,7 +78,7 @@ def prepare_barcode(infile,outfile,dataset):
 		output_file.close()
 	input_file.close()
 
-#Create a funtion to merge the two SAM/GFF/VCF subfiles
+#Create a function to merge the two SAM/GFF/VCF subfiles
 def merge_subfiles(dataset,subfile_name,template_length):
 	#Inform the user
 	print("\t\t - Merging metadata subfiles for: "+subfile_name+" "+str(datetime.datetime.now()))
@@ -85,7 +89,7 @@ def merge_subfiles(dataset,subfile_name,template_length):
 	line_metadata=metadata.readline()
 	while(line_metadata[0]=="@" or line_metadata[0]=="#"):
 		line_metadata=metadata.readline()
-	#If the dataset is alignemnt, there are two subfiles 
+	#If the dataset is alignment, there are two subfiles
 	if(dataset=="Alignment"):
 		#Open the updated and discarded files
 		updated_file=open("./temporary_directory/"+subfile_name,"a")	#Open the updated file in append mode since it already contains the comments
@@ -143,7 +147,7 @@ def merge_subfiles(dataset,subfile_name,template_length):
 					line_metadata=metadata.readline().split("\t")
 					line_A=file_A.readline().rstrip().split("\t")
 					line_B=file_B.readline().rstrip().split("\t")
-				#If the barcodes dont match, one of the reads was discarded at some point. If the barcode of both reads match, then both reads were discarded. Discard the 
+				#If the barcodes dont match, one of the reads was discarded at some point. If the barcode of both reads match, then both reads were discarded. Discard the
 				# entire entry and loop to the next line of the metadata
 				elif(barcode_A==barcode_B):
 					#Discard the entry
@@ -215,7 +219,7 @@ def merge_subfiles(dataset,subfile_name,template_length):
 					line_metadata=metadata.readline().split("\t")
 					line_A=file_A.readline().rstrip().split("\t")
 					line_B=file_B.readline().rstrip().split("\t")
-				#If the barcodes dont match, one of the reads was discarded at some point. If the barcode of both reads match, then both reads were discarded. Discard the 
+				#If the barcodes dont match, one of the reads was discarded at some point. If the barcode of both reads match, then both reads were discarded. Discard the
 				# entire entry and loop to the next line of the metadata
 				elif(barcode_A==barcode_B):
 					#Discard the entry
@@ -290,27 +294,30 @@ def merge_subfiles(dataset,subfile_name,template_length):
 	metadata.close()
 
 #Create a function to start a given function and its arguments in a subprocess in the shell. It will need to update the number of processes being processed and the number already processed
-def call_batch(function,argument):
-	#Load variables
-	global processing
-	global processed
-	#Create a process and start it
-	p = Process(target=function, args=(argument,))
-	p.start()
-	p.join()
-	#Update variables
-	processing-=1
-	processed+=1
+# def call_batch(function,argument):
+# 	#Load variables
+# 	global processing
+# 	global processed
+# 	#Create a process and start it
+# 	p = Process(target=function, args=(argument,))
+# 	p.start()
+# 	p.join()
+# 	#Update variables
+# 	processing-=1
+# 	processed+=1
 
 #Create a funciton to analyse the alignment of a given sequence and append the updated/discarded entries into the global output dictionaries
-def update_sequence(query):
+def update_sequence(query, processing):
 	#Load global variables
 	global discarded
 	global ToUpdate
 	global OldNewID_Dict
 	global tabix_queries
+	all_queries=tabix_queries.keys()
+	prev_time=time.time()
 	#Execute the query
 	ShellCommand=Popen(query,shell=True).wait()
+
 	#If the query corresponds with an omitted region or an identical sequence, it is only necessary to perform the query. Exit the function.
 	if(tabix_queries[query]=="identical"):
 		#Exit the function
@@ -323,17 +330,16 @@ def update_sequence(query):
 		#Determine the lenght of the sequence
 		length=int(tabix_queries[query][8])
 		#Loop through the lines of the outfile
-		for entry in subset_file:
+		#BUG? subset_file changed to query_outfile
+		for entry in query_outfile:
 			#Split the entry by the tabs and modify the entries so that they correspond with the reverse index
 			entry=entry.split("\t")
-			entry[1]=str(length-int(entry[1]))
+			entry[1]=str(length-int(entry[1])+1)
 			#Modify the oldID with the newID
 			entry[0]=OldNewID_Dict[entry[0]]
 			#Join the entry and append it into the overwrite dict
 			updated_file.write("\t".join(entry))
-		#Close the files
-		query_outfile.close()
-		updated_file.close()
+
 		#Delete the subsets
 		#os.remove("./temporary_directory/"+tabix_queries[query][3]+"_"+tabix_queries[query][4]+":0"+tabix_queries[query][1]) THIS IS FOR TESTING
 	#Otherwise sequence alignment must be evaluated.
@@ -365,8 +371,8 @@ def update_sequence(query):
 					updated_file.write("\t".join(entry))
 				#If there are some modifications in the alignment, both factors need to be considered
 				else:
-					entry_index=entry_index+displacement_factor
 					#Update the entry index with the displacement related to the snps
+					entry_index=entry_index+displacement_factor
 					for snp in tabix_queries[query][9]:
 						#Store the snp information
 						snp=snp.split()
@@ -388,10 +394,12 @@ def update_sequence(query):
 					#Update the list
 					entry[1]=str(entry_index)
 					updated_file.write("\t".join(entry))
-		#Close the files
-		query_outfile.close()
-		updated_file.close()
-		
+					if(time.time()-prev_time>30):
+						print("\t\t\t "+str(processing)+" queries processed out of "+str(len(all_queries))+" "+str(datetime.datetime.now()))
+						prev_time=time.time()
+
+
+
 #Create a function to interpret the alignment of a tabix_queries
 def interpret_alignment(queries,oldnew,threads,ToUpdate,tlength,filecrack):
 	#Create global variables for the threads
@@ -415,22 +423,39 @@ def interpret_alignment(queries,oldnew,threads,ToUpdate,tlength,filecrack):
 				ShellCommand=Popen("cp ./"+subfile[1]+"/Comments.txt ./temporary_directory/"+subfile[0],shell=True).wait()
 	#From now on this part can be threaded, one thread analysing one tabix query at a time. The dictionaries must be made global otherwise they will be overwriten.
 	query_count=0
-	all_queries=tabix_queries.keys()
-	prev_time=time.time()
+	#NEW, added list(), python3 returns view if you access .keys
+	all_queries=list(tabix_queries.keys())
+	#NEW
+
 	#While there are sequence alignments to be processed
 	print("\n\t\t - Now processing tabix queries "+str(datetime.datetime.now()))
-	while(processed!=len(all_queries)):
-		#If the number of currently processing threads is lower than the thread number and there are commands to start execution, start their execution
-		if (processing<number_threads) and (query_count<len(all_queries)):
-			t=Thread(target=call_batch, args=(update_sequence,all_queries[query_count],))
-			t.daemon = True
-			t.start()
-			query_count+=1
-			processing+=1
-		#Inform the user of the progress. Do this only every 30 seconds.
-		if(time.time()-prev_time>30):
-			print("\t\t\t "+str(processed)+" queries processed out of "+str(len(all_queries))+" "+str(datetime.datetime.now()))
-			prev_time=time.time()
+	#### MAY NEED TO CHANGE THIS #####
+	threads = multiprocessing.cpu_count() * 2
+	pool = multiprocessing.Pool(threads)
+	while(processing != len(all_queries)):
+		for query_count in range(0,len(all_queries)):
+			pool.apply_async(update_sequence,args=(all_queries[query_count], processing,))
+			processing += 1
+
+	pool.close()
+	pool.join()
+
+	# while(processed!=len(all_queries)):
+	# 	#If the number of currently processing threads is lower than the thread number and there are commands to start execution, start their execution
+	# 	if (processing<number_threads) and (query_count<len(all_queries)):
+	# 		t = Thread(target=call_batch, args=(update_sequence, all_queries[query_count]),)
+	# 		t.daemon = True
+	# 		t.start()
+	# 		query_count+=1
+	# 		processing+=1
+	# 	#Inform the user of the progress. Do this only every 30 seconds.
+	# 	if(time.time()-prev_time>30):
+	# 		print("\t\t\t "+str(processed)+" queries processed out of "+str(len(all_queries))+" "+str(datetime.datetime.now()))
+	# 		prev_time=time.time()
+
+
+
+
 	#When the threads are done, merge the files in the filecrack. Inform the user.
 	print("\n\t\t - Now concatenating updated subfiles resulting from multi-threaded mode "+subfile[0]+" "+str(datetime.datetime.now()))
 	sys.stdout.flush()

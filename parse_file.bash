@@ -20,8 +20,10 @@ if [ "$1" = "Genome" ]; then
 			if [ -d "temporary_directory" ]; then
 				rm -r temporary_directory
 			fi
-			#Call the updating script, inform of which datasets to be updated. Arguments: file threads size tlength.
-			python $source/update.py $2 $3 $4 $5
+			#User input to select alignment method for lift over
+			
+			#Call the updating script, inform of which datasets to be updated. Arguments: file threads size tlength alignment_method.
+			python $source/update.py $2 $3 $4 $5 $6 $7 $8 $9
 			#Delete the temporary directory
 			rm -r ./temporary_directory
 		fi
@@ -87,5 +89,3 @@ else
 		date
 		echo ""
 fi
-
-

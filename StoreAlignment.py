@@ -9,9 +9,9 @@ import pickle
 #Create a store_variables function to store the provided variables into a pickle
 def store_variables(variables,alignment_pickle):
 	#Open a pickle
-	with open(alignment_pickle+"/pickle", "wb") as pickle_file:
+	with open("{}/pickle".format(alignment_pickle), "wb") as pickle_file:
 		#Store the variable list
-		pickle.dump(variables, pickle_file,protocol=1)
+		pickle.dump(variables, pickle_file, protocol=1)
 	#Close the pickle
 	pickle_file.close()
 
@@ -53,7 +53,4 @@ def obtain_alignment_pickle(old_assembly,new_assembly):
 	#Obtain the hash
 	old_assembly_hash=str(hashlib.sha1("".join(content)).hexdigest())
 	#Return the combination of both hashes
-	return str("./Delta/"+new_assembly_hash+"_"+old_assembly_hash)
-
-
-
+	return str("./Delta/{}_{}".format(new_assembly_hash, old_assembly_hash))

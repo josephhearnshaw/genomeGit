@@ -71,11 +71,15 @@ elif [ "$1" = "add" ]; then
 			#Default the threads to 1 and the tlength to 1KB
 			threads=1
 			tlength=1000
+			aligner=2
+			percent_identity=95
+			kmer=16
+			segLength=5000
 			#Loop through the arguments
 			for WORD; do
 				case $WORD in
 					#If the current argument is the optional number of threads
-					--threads=*)
+					--t=*|--threads=*)
 						#Determine the number of threads selected
 						threads=${1#*=}
 						#Determine if the threads is a valid input, otherwise default it back to 1
@@ -83,7 +87,7 @@ elif [ "$1" = "add" ]; then
 							echo "Invalid threads selection, defaulting it to 1 thread."
 							threads=1
 						fi
-						#Shift the arguments (jump to the next)
+						#Next arg
 						shift
 						;;
 					#If the current argument is the optional template max lenght
@@ -98,6 +102,46 @@ elif [ "$1" = "add" ]; then
 						#Shift the arguments (jump to the next)
 						shift
 						;;
+						--a=*|--aligner=*)
+							#Determine which aligner was chosen
+							aligner=${1#*=}
+							if ! [[ "$aligner" =~ ^[1-2]+$ ]] || ! [ "$aligner" -ge 1 ]; then
+								echo "Invalid aligner selection, defaulting it to nucmer."
+								aligner=2
+							fi
+							#Shift the arguments (jump to the next)
+							shift
+							;;
+						--pi=*)
+							#Determine which aligner was chosen
+							percent_identity=${1#*=}
+							if ! [[ "$percent_identity" =~ ^[0-9]+$ ]] || ! [ "$percent_identity" -ge 1 ]; then
+								echo "Invalid percent identity value, defaulting it to 95."
+								percent_identity=95
+							fi
+							#Shift the arguments (jump to the next)
+							shift
+							;;
+						--k=*|--kmer=*)
+							#Determine which aligner was chosen
+							kmer=${1#*=}
+							if ! [[ "$kmer" =~ ^[0-9]+$ ]] || ! [ "$kmer" -ge 1 ]; then
+								echo "Invalid k-mer selected, defaulting it to 16."
+								kmer=16
+							fi
+							#Shift the arguments (jump to the next)
+							shift
+							;;
+						--s=*|--segLength=*)
+							#Determine which aligner was chosen
+							segLength=${1#*=}
+							if ! [[ "$segLength" =~ ^[0-9]+$ ]] || ! [ "$segLength" -ge 1 ]; then
+								echo "Invalid segment length selected, defaulting it to 5000."
+								segLength=5000
+							fi
+								#Shift the arguments (jump to the next)
+							shift
+							;;
 					#If the current argument is the optional --no-update, avoid the auto update
 					--no-update*)
 						#Inform the user
@@ -126,7 +170,8 @@ elif [ "$1" = "add" ]; then
 								echo ""
 								echo "$class dataset detected. Now parsing $filename into git-compatible objects."
 								#Parse and add the dataset. Arguments: class file threads size tlenght
-								bash $source/parse_file.bash "$class" "$filename" "$threads" "$filesize" "$tlength"
+								bash $source/parse_file.bash "$class" "$filename" "$threads" "$filesize" "$tlength" "$aligner"\
+								"$percent_identity" "$kmer" "$segLength"
 							#if it corresponds with a genome dataset, do not perform auto-update
 							elif [ "$class" = "Genome" ]; then
 								#Save the file size in MB
@@ -207,7 +252,8 @@ elif [ "$1" = "add" ]; then
 								echo ""
 								echo "$class dataset detected. Now parsing $filename into git-compatible objects."
 								#Parse and add the dataset. Arguments: class file threads size tlenght
-								bash $source/parse_file.bash "$class" "$filename" "$threads" "$filesize" "$tlength"
+								bash $source/parse_file.bash "$class" "$filename" "$threads" "$filesize" "$tlength" "$aligner"\
+								"$percent_identity" "$kmer" "$segLength"
 							#Otherwise it was an invalid file
 							else
 								echo "Unrecognised file format: $filename"

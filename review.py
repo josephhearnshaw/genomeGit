@@ -112,7 +112,7 @@ if(merge):
 	report_file.close()
 	#Inform the user
 	print("Review completed, merged sequences report stored in GenomeGit_Merge.txt file.\n"+str(mergeA_count)+" sequences present in "+message_A.rstrip()+" experienced merging.\n"+str(mergeB_count)+" sequences present in "+message_B.rstrip()+" are a product of two or more sequences merging.")
-			
+
 #Otherwise produce a normal report
 else:
 	#Parse the coords file {oldID:[contigs]...}
@@ -175,7 +175,7 @@ else:
 		table[oldID].append("\t|\n\t| Total coverage:\n\t|\n\t|\t-Version A: "+str(coverage_ref)+"%\n\t|\t-Version B: "+str(coverage_quer)+"%")
 		table[oldID].append("\t|\n\t------")
 
-	#Print the table into the output file. 
+	#Print the table into the output file.
 	with open("../GenomeGit_Diff.txt","w") as output_file:
 		#Print initial info
 		output_file.write("\nNow producing a summary review between commits "+commit_A+" and "+commit_B+". Warning: If you have added any data into the repository but did not commit, these changes will be lost.\n")

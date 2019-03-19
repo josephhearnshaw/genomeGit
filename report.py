@@ -84,7 +84,7 @@ with open("./RepoMap.txt","r") as repomap:
 			annotation_number+=1
 		elif(line[1]=="Alignment"):
 			alignment_number+=1
-		elif(line[1]=="Variants"):		
+		elif(line[1]=="Variants"):
 			variants_number+=1
 repomap.close()
 print("Number of sequences stored in the Genome dataset: "+str(len(genome_report.keys())))

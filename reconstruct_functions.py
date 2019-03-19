@@ -288,7 +288,7 @@ def reconstruct_dataset(size,directory,output_file,mode,seqID="0",region="0",upd
 				#Only append comments if filemode is different than append (no comments if the user reconstruct a region)
 				if(filemode!="a"):
 					comment_file=open(directory+"/Comments.txt","r")
-					for line in comments:
+					for line in comment_file:
 						reconstruct.write(line)
 					comment_file.close()
 				#Determine the files of interest (those files containing the region of interest) and create a list [filename,filename...]
@@ -349,7 +349,7 @@ def reconstruct_dataset(size,directory,output_file,mode,seqID="0",region="0",upd
 			#Only append comments if filemode is different than append (no comments if the user reconstruct a region)
 			if(filemode!="a"):
 				comment_file=open(directory+"/Comments.txt","r")
-				for line in comments:
+				for line in comment_file:
 					reconstruct.write(line)
 				comment_file.close()
 			#Determine the files of interest (those files containing the region of interest) and create a list [filename,filename...]

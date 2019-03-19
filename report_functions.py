@@ -124,9 +124,3 @@ def report_repo():
 			map_file.close()
 	#Return the dictionary {seqKey:[seqID,lenght,conitg_count,N_count,[{file:vcf},{file:gff},{file:sam}]]}
 	return genome_report
-	
-		
-		
-		
-		
-		

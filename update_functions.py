@@ -8,12 +8,12 @@ import os
 #Create detect_updates function to return a dictionary informing of the files to be updated {dataset:[[filename,directory,size],[...]]}
 def detect_updates(map_path):
 	#Initiate empty variable and empty dictionary {dataset:[[filename.extension,directory,size],[...]]}
-	empty=True
-	ToUpdate={}
-	ToUpdate["Genome"]=[]
-	ToUpdate["Annotation"]=[]
-	ToUpdate["Variants"]=[]
-	ToUpdate["Alignment"]=[]
+	empty = True
+	ToUpdate = {}
+	ToUpdate["Genome"] = []
+	ToUpdate["Annotation"] = []
+	ToUpdate["Variants"] = []
+	ToUpdate["Alignment"] = []
 	#Open the repomap
 	with open(map_path,"r") as repomap:
 		#Loop through the lines of the repomap
@@ -26,7 +26,7 @@ def detect_updates(map_path):
 				ToUpdate[line[1]].append([line[0],line[2],line[4].rstrip()])
 			#Otherwise is not a correct dataset
 			else:
-				print("***INTERNAL ERROR*** DATASET NOT RECOGNIZED: "+line[1])
+				print("***INTERNAL ERROR*** DATASET NOT RECOGNIZED: {}".format(line[1]))
 				return "empty"
 	#Close the repomap
 	repomap.close()

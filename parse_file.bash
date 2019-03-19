@@ -20,10 +20,8 @@ if [ "$1" = "Genome" ]; then
 			if [ -d "temporary_directory" ]; then
 				rm -r temporary_directory
 			fi
-			#User input to select alignment method for lift over
-			
-			#Call the updating script, inform of which datasets to be updated. Arguments: file threads size tlength alignment_method.
-			python $source/update.py $2 $3 $4 $5 $6 $7 $8 $9
+			#Call the updating script, inform of which datasets to be updated. Arguments: file threads size tlength.
+			python $source/update.py $2 $3 $4 $5
 			#Delete the temporary directory
 			rm -r ./temporary_directory
 		fi
@@ -66,8 +64,15 @@ else
 	if ! [ -d $1 ]; then
 		mkdir $1
 	fi
-		#Save the file name
-		FileName=$(basename $2)
+	    #NEW
+	    #Save the file name
+	    if [[ $2 == *".bam" ]]; then
+	        fileBasename=$(basename $2)
+	        FileName=${fileBasename/.bam/'.sam'}
+	    else
+	        FileName=$(basename $2)
+	    fi
+
 		#If a file with the same name is stored, delete its contents and make update=1
 		if [ -d ./$1/$FileName ]; then
 			rm -r ./$1/$FileName/*
@@ -89,3 +94,5 @@ else
 		date
 		echo ""
 fi
+
+

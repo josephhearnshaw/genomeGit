@@ -4,10 +4,23 @@
 
 #Make the imports
 import sys
-
+import subprocess
+import os
+import time
 #Intiate variables:
 comments=False
 header=False
+
+#NEW
+#Check if the file is BAM alignment file
+if('.bam' in str(sys.argv[1])):
+	output = subprocess.Popen("samtools quickcheck " + str(sys.argv[1]), shell=True,stdout=subprocess.PIPE)
+	output.wait()
+
+	if(output.returncode == 0):
+		print("Alignment")
+		sys.exit()
+#NEW
 
 #Open the input file
 with open(str(sys.argv[1]),"r") as input_file:
@@ -22,7 +35,7 @@ with open(str(sys.argv[1]),"r") as input_file:
 		#Only consider the line if it is not a comment
 		if (line[0]!="#" and line[0]!="@"):
 			#Split the line into its fields
-			line=line.split()
+			line=line.split("\t")
 			#If the number of fields is different than 0, determine which fields are numbers (field 2 in vcf; fields 4 and 5 in gff)
 			if(len(line)!=0):
 				#If it is alignment file

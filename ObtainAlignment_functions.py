@@ -445,7 +445,7 @@ def aligner_caller(aligner_switch, threads, nucmer_directory, reference_director
             filter_delta(delta_file="{}.delta".format(nucmer_directory), out_file=delta_directory)
         elif aligner_switch == 1:
             print("\t\t\t  - Running MashMap " + str(datetime.datetime.now()))
-            ShellCommand_mashMap = ['/usr/local/bin/bin/mashmap', '-s', str(segLength), '-k', str(kmer), '--pi',
+            ShellCommand_mashMap = ['/usr/local/bin/mashmap', '-s', str(segLength), '-k', str(kmer), '--pi',
 			str(percent_identity), '-t', str(threads), '-r', reference_directory, '-q', query_directory,
                 '-o', mashmap_directory]
             Popen(ShellCommand_mashMap).wait()

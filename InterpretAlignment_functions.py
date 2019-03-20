@@ -17,10 +17,10 @@ import multiprocessing
 import subprocess
 from multiprocessing import Process
 
+
 #Create global variables
 tabix_queries={}
 OldNewID_Dict={}
-number_threads=1
 processed=0
 processing=0
 updated={}
@@ -39,9 +39,9 @@ def weld_cracks(file_crack):
 					for line in crack:
 						final_file.write(line)
 				#Close the file
-				crack.close()
+				#crack.close()
 		#Close the file
-		final_file.close()
+		#final_file.close()
 
 #Create a function to eliminate repeated barcodes in sub SAM files (this can mess arround with the merge process)
 def prepare_barcode(infile,outfile,dataset):
@@ -49,7 +49,7 @@ def prepare_barcode(infile,outfile,dataset):
 	old_index="0"
 	with open(infile,"r") as input_file:
 		#Open the output file and loop through the lines of the input file
-		output_file=open(outfile,"w")
+		output_file=open(outfile,"w+")
 		#If annotation/alignment
 		if(dataset!="Variants"):
 			for line in input_file:
@@ -75,16 +75,16 @@ def prepare_barcode(infile,outfile,dataset):
 					output_file.write("\t".join(line))
 				old_index=new_index
 		#Close all files
-		output_file.close()
-	input_file.close()
+		#output_file.close()
+	#input_file.close()
 
 #Create a function to merge the two SAM/GFF/VCF subfiles
 def merge_subfiles(dataset,subfile_name,template_length):
 	#Inform the user
-	print("\t\t - Merging metadata subfiles for: "+subfile_name+" "+str(datetime.datetime.now()))
+	print("\t\t - Merging metadata subfiles for: {} at {}".format(subfile_name, str(datetime.datetime.now())))
 	sys.stdout.flush()
 	#Open the metadata
-	metadata=open("./temporary_directory/"+subfile_name+"_metadata","r")
+	metadata=open("./temporary_directory/{}_metadata".format(subfile_name),"r")
 	#Read through all the comments of the metadata
 	line_metadata=metadata.readline()
 	while(line_metadata[0]=="@" or line_metadata[0]=="#"):
@@ -92,14 +92,16 @@ def merge_subfiles(dataset,subfile_name,template_length):
 	#If the dataset is alignment, there are two subfiles
 	if(dataset=="Alignment"):
 		#Open the updated and discarded files
-		updated_file=open("./temporary_directory/"+subfile_name,"a")	#Open the updated file in append mode since it already contains the comments
-		discarded_file=open("./temporary_directory/"+subfile_name+".discarded","w")
+		updated_file=open("./temporary_directory/{}".format(subfile_name),"a")	#Open the updated file in append mode since it already contains the comments
+		discarded_file=open("./temporary_directory/{}.discarded".format(subfile_name),"w+")
 		#First thing required is to prepare the barcodes in the subfiles: eliminate repeated barcodes
-		prepare_barcode(infile="./temporary_directory/sorted_updated_"+subfile_name+"_A",outfile="./temporary_directory/BarcodeReady_"+subfile_name+"_A",dataset=dataset)
-		prepare_barcode(infile="./temporary_directory/sorted_updated_"+subfile_name+"_B",outfile="./temporary_directory/BarcodeReady_"+subfile_name+"_B",dataset=dataset)
+		prepare_barcode(infile="./temporary_directory/sorted_updated_{}_A".format(subfile_name),
+		outfile="./temporary_directory/BarcodeReady_{}_A".format(subfile_name),dataset=dataset)
+		prepare_barcode(infile="./temporary_directory/sorted_updated_{}_B".format(subfile_name),
+		outfile="./temporary_directory/BarcodeReady_{}".format(subfile_name),dataset=dataset)
 		#Open the files
-		file_A=open("./temporary_directory/BarcodeReady_"+subfile_name+"_A","r")
-		file_B=open("./temporary_directory/BarcodeReady_"+subfile_name+"_B","r")
+		file_A=open("./temporary_directory/BarcodeReady_{}_A".format(subfile_name),"r")
+		file_B=open("./temporary_directory/BarcodeReady_{}_B".format(subfile_name),"r")
 		#Read the first line of metadata and the files A & B. Split them by the tabs
 		line_metadata=line_metadata.split("\t")
 		line_A=file_A.readline().rstrip().split("\t")
@@ -170,21 +172,23 @@ def merge_subfiles(dataset,subfile_name,template_length):
 						#Read as well the next one in the metadata
 						line_metadata=metadata.readline().split("\t")
 		#Close the files
-		file_A.close()
-		file_B.close()
-		updated_file.close()
-		discarded_file.close()
+		#file_A.close()
+		#file_B.close()
+		#updated_file.close()
+		#discarded_file.close()
 	#If it is annotation
 	elif(dataset=="Annotation"):
 		#Open the updated and discarded files
-		updated_file=open("./temporary_directory/"+subfile_name,"a")	#Open the updated file in append mode since it already contains the comments
-		discarded_file=open("./temporary_directory/"+subfile_name+".discarded","w")
+		updated_file=open("./temporary_directory/{}".format(subfile_name),"a")	#Open the updated file in append mode since it already contains the comments
+		discarded_file=open("./temporary_directory/{}.discarded".format(subfile_name),"w+")
 		#First thing required is to prepare the barcodes in the subfiles: eliminate repeated barcodes
-		prepare_barcode(infile="./temporary_directory/sorted_updated_"+subfile_name+"_A",outfile="./temporary_directory/BarcodeReady_"+subfile_name+"_A",dataset=dataset)
-		prepare_barcode(infile="./temporary_directory/sorted_updated_"+subfile_name+"_B",outfile="./temporary_directory/BarcodeReady_"+subfile_name+"_B",dataset=dataset)
+		prepare_barcode(infile="./temporary_directory/sorted_updated_{}_A".format(subfile_name),
+		outfile="./temporary_directory/BarcodeReady_{}_A".format(subfile_name),dataset=dataset)
+		prepare_barcode(infile="./temporary_directory/sorted_updated_{}_B".format(subfile_name),
+		outfile="./temporary_directory/BarcodeReady_{}_B".format(subfile_name),dataset=dataset)
 		#Open the files
-		file_A=open("./temporary_directory/BarcodeReady_"+subfile_name+"_A","r")
-		file_B=open("./temporary_directory/BarcodeReady_"+subfile_name+"_B","r")
+		file_A=open("./temporary_directory/BarcodeReady_{}_A".format(subfile_name),"r")
+		file_B=open("./temporary_directory/BarcodeReady_{}_B".format(subfile_name),"r")
 		#Read the first line of metadata and the files A & B. Split them by the tabs
 		line_metadata=line_metadata.split("\t")
 		line_A=file_A.readline().rstrip().split("\t")
@@ -242,19 +246,20 @@ def merge_subfiles(dataset,subfile_name,template_length):
 						#Read as well the next one in the metadata
 						line_metadata=metadata.readline().split("\t")
 		#Close the files
-		file_A.close()
-		file_B.close()
-		updated_file.close()
-		discarded_file.close()
+		#file_A.close()
+		#file_B.close()
+		#updated_file.close()
+		#discarded_file.close()
 	#Otherwise it is variants: only one subfile
 	else:
 		#Open the updated and discarded files
-		updated_file=open("./temporary_directory/"+subfile_name,"a")	#Open the updated file in append mode since it already contains the comments
-		discarded_file=open("./temporary_directory/"+subfile_name+".discarded","w")
+		updated_file=open("./temporary_directory/{}".format(subfile_name),"a")	#Open the updated file in append mode since it already contains the comments
+		discarded_file=open("./temporary_directory/{}.discarded".format(subfile_name),"w+")
 		#First thing required is to prepare the barcodes in the subfiles: eliminate repeated barcodes
-		prepare_barcode(infile="./temporary_directory/sorted_updated_"+subfile_name+"_A",outfile="./temporary_directory/BarcodeReady_"+subfile_name+"_A",dataset=dataset)
+		prepare_barcode(infile="./temporary_directory/sorted_updated_{}_A".format(subfile_name),
+		outfile="./temporary_directory/BarcodeReady_{}_A".format(subfile_name),dataset=dataset)
 		#Open the files
-		file_A=open("./temporary_directory/BarcodeReady_"+subfile_name+"_A","r")
+		file_A=open("./temporary_directory/BarcodeReady_{}_A".format(subfile_name),"r")
 		#Read the first line of metadata and A. Split them by the tabs
 		line_metadata=line_metadata.split("\t")
 		line_A=file_A.readline().rstrip().split("\t")
@@ -286,12 +291,12 @@ def merge_subfiles(dataset,subfile_name,template_length):
 					#Re-adjust by reading the next line in the metadata and split it by the tabs
 					line_metadata=metadata.readline().split("\t")
 		#Close the files
-		file_A.close()
-		updated_file.close()
-		discarded_file.close()
+		#file_A.close()
+		#updated_file.close()
+		#discarded_file.close()
 
 	#Close metadata
-	metadata.close()
+	#metadata.close()
 
 #Create a function to start a given function and its arguments in a subprocess in the shell. It will need to update the number of processes being processed and the number already processed
 # def call_batch(function,argument):
@@ -316,7 +321,13 @@ def update_sequence(query, processing):
 	all_queries=tabix_queries.keys()
 	prev_time=time.time()
 	#Execute the query
-	ShellCommand=Popen(query,shell=True).wait()
+	ShellCommand=Popen(query, shell=True).wait()
+
+	# all_tabix_queries, tabix_sequence, tabix_variants, tabix_query_outfile, tabix_updated, tabix_length, tabix_mods =\
+	# tabix_queries[query], tabix_queries[query][0], tabix_queries[query][2], tabix_queries[query][5], tabix_queries[query][6],\
+	#  tabix_queries[query][8], tabix_queries[query][9]
+	#
+	# tabix_displacement = all_tabix_queries[8][0:4]
 
 	#If the query corresponds with an omitted region or an identical sequence, it is only necessary to perform the query. Exit the function.
 	if(tabix_queries[query]=="identical"):
@@ -326,7 +337,7 @@ def update_sequence(query, processing):
 	elif(tabix_queries[query][0]=="reversed"):
 		#Open the query output file, updated and there is no need for discarded file (identical reverse sequence)
 		query_outfile=open(tabix_queries[query][5],"r")
-		updated_file=open(tabix_queries[query][6],"w")
+		updated_file=open(tabix_queries[query][6],"w+")
 		#Determine the lenght of the sequence
 		length=int(tabix_queries[query][8])
 		#Loop through the lines of the outfile
@@ -348,7 +359,7 @@ def update_sequence(query, processing):
 		displacement_factor=int(tabix_queries[query][8][2])-int(tabix_queries[query][8][0])
 		#Open the query output file, updated and the discarded file
 		query_outfile=open(tabix_queries[query][5],"r")
-		updated_file=open(tabix_queries[query][6],"w")
+		updated_file=open(tabix_queries[query][6],"w+")
 		#Loop through the entries resulting out of the tabix query
 		for entry in query_outfile:
 			#Split the entry by the tabs
@@ -394,8 +405,8 @@ def update_sequence(query, processing):
 					#Update the list
 					entry[1]=str(entry_index)
 					updated_file.write("\t".join(entry))
-					if(time.time()-prev_time>30):
-						print("\t\t\t "+str(processing)+" queries processed out of "+str(len(all_queries))+" "+str(datetime.datetime.now()))
+					if(time.time()-prev_time>20):
+						print("\t\t\t {} queries processed out of {} at {}".format(str(processing), str(len(all_queries)), str(datetime.datetime.now())))
 						prev_time=time.time()
 
 
@@ -428,10 +439,10 @@ def interpret_alignment(queries,oldnew,threads,ToUpdate,tlength,filecrack):
 	#NEW
 
 	#While there are sequence alignments to be processed
-	print("\n\t\t - Now processing tabix queries "+str(datetime.datetime.now()))
+	print("\n\t\t - Now processing tabix queries at {}".format(str(datetime.datetime.now())))
 	#### MAY NEED TO CHANGE THIS #####
-	threads = multiprocessing.cpu_count() * 2
-	pool = multiprocessing.Pool(threads)
+
+	pool = multiprocessing.Pool(number_threads)
 	while(processing != len(all_queries)):
 		for query_count in range(0,len(all_queries)):
 			pool.apply_async(update_sequence,args=(all_queries[query_count], processing,))
@@ -457,7 +468,7 @@ def interpret_alignment(queries,oldnew,threads,ToUpdate,tlength,filecrack):
 
 
 	#When the threads are done, merge the files in the filecrack. Inform the user.
-	print("\n\t\t - Now concatenating updated subfiles resulting from multi-threaded mode "+subfile[0]+" "+str(datetime.datetime.now()))
+	print("\n\t\t - Now concatenating updated subfiles resulting from multi-threaded mode {} at {}".format(subfile[0], str(datetime.datetime.now())))
 	sys.stdout.flush()
 	weld_cracks(filecrack)
 	#Finally, when the files are created it is required to sort them. Loop through the datasets.
@@ -466,34 +477,45 @@ def interpret_alignment(queries,oldnew,threads,ToUpdate,tlength,filecrack):
 			#Loop through the files of the dataset
 			for subfile in ToUpdate[dataset]:
 				#Inform the user
-				print("\n\t\t - Now parsing updated file "+subfile[0]+ " into the repository structure "+str(datetime.datetime.now()))
+				print("\n\t\t - Now parsing updated file {} into the repository structure at {}".format(subfile[0], str(datetime.datetime.now())))
 				sys.stdout.flush()
 				#If the dataset is alignment
 				if(dataset=="Alignment"):
 					#Append the missing unmaped reads intot he updated files (these reads wont be included otherwise)
-					ShellCommand=Popen("tabix ./temporary_directory/"+subfile[0]+"_A.gz *:0 >> ./temporary_directory/updated_"+subfile[0]+"_A",shell=True).wait()
-					ShellCommand=Popen("tabix ./temporary_directory/"+subfile[0]+"_B.gz *:0 >> ./temporary_directory/updated_"+subfile[0]+"_B",shell=True).wait()
+					ShellCommand=Popen("tabix ./temporary_directory/{}_A.gz *:0 >> ./temporary_directory/updated_{}_A".format(subfile[0],
+										subfile[0]),shell=True).wait()
+					ShellCommand=Popen("tabix ./temporary_directory/{}_B.gz *:0 >> ./temporary_directory/updated_{}_B".format(subfile[0],
+										subfile[0]),shell=True).wait()
 					#Sort the reads in both A and B files using the barcode
-					ShellCommand=Popen("sort --numeric-sort -k 3 ./temporary_directory/updated_"+subfile[0]+"_A > ./temporary_directory/sorted_updated_"+subfile[0]+"_A",shell=True).wait()
-					ShellCommand=Popen("sort --numeric-sort -k 3 ./temporary_directory/updated_"+subfile[0]+"_B > ./temporary_directory/sorted_updated_"+subfile[0]+"_B",shell=True).wait()
+					ShellCommand=Popen("sort --numeric-sort -k 3 ./temporary_directory/updated_{}_A > ./temporary_directory/sorted_updated_{}_A".format(subfile[0],
+										subfile[0]),shell=True).wait()
+					ShellCommand=Popen("sort --numeric-sort -k 3 ./temporary_directory/updated_{}_B > ./temporary_directory/sorted_updated_{}_B".format(subfile[0],
+										subfile[0]),shell=True).wait()
 				elif(dataset=="Annotation"):
 					#Sort the reads in both A and B files using the barcode
-					ShellCommand=Popen("sort --numeric-sort -k 3 ./temporary_directory/updated_"+subfile[0]+"_A > ./temporary_directory/sorted_updated_"+subfile[0]+"_A",shell=True).wait()
-					ShellCommand=Popen("sort --numeric-sort -k 3 ./temporary_directory/updated_"+subfile[0]+"_B > ./temporary_directory/sorted_updated_"+subfile[0]+"_B",shell=True).wait()
+					ShellCommand=Popen("sort --numeric-sort -k 3 ./temporary_directory/updated_{}_A > ./temporary_directory/sorted_updated_{}_A".format(subfile[0],
+										subfile[0]),shell=True).wait()
+					ShellCommand=Popen("sort --numeric-sort -k 3 ./temporary_directory/updated_{}_B > ./temporary_directory/sorted_updated_{}_B".format(subfile[0],
+										subfile[0]),shell=True).wait()
 				#Otherwise it is variants
 				else:
 					#Sort the reads in both A and B files using the barcode
-					ShellCommand=Popen("sort --numeric-sort -k 4 ./temporary_directory/updated_"+subfile[0]+"_A > ./temporary_directory/sorted_updated_"+subfile[0]+"_A",shell=True).wait()
+					ShellCommand=Popen("sort --numeric-sort -k 4 ./temporary_directory/updated_{}_A > ./temporary_directory/sorted_updated_{}_A".format(subfile[0],
+										subfile[0]),shell=True).wait()
 				#Merge all the files
 				merge_subfiles(dataset=dataset,subfile_name=subfile[0],template_length=int(tlength))
+				#make the directory
+				git_directory = "./{}/{}".format(dataset, subfile[0])
 				#Parse the updated file into the repository (not necessary to git add, that is done in the genomegit main wrapper). First, delete the old directory.
-				shutil.rmtree("./"+dataset+"/"+subfile[0])
+				shutil.rmtree(git_directory)
 				#Create a new directory a move inside
-				os.mkdir("./"+dataset+"/"+subfile[0])
-				os.chdir("./"+dataset+"/"+subfile[0])
+				os.mkdir(git_directory)
+				os.chdir(git_directory)
 				#Parse the file
-				parse_dataset(dataset=dataset,input_path="../../temporary_directory/"+subfile[0],size=str(os.path.getsize("../../temporary_directory/"+subfile[0]))[:-1],update="1")
+				parse_dataset(dataset=dataset,input_path="../../temporary_directory/{}".format(subfile[0]),
+								size=str(os.path.getsize("../../temporary_directory/"+subfile[0]))[:-1],update="1")
 				#Go back to the base directory
 				os.chdir("../../")
 				#Add the discarded entries into the file directory
-				shutil.copyfile("./temporary_directory/"+subfile[0]+".discarded","./"+dataset+"/"+subfile[0]+"/Discarded")
+
+				shutil.copyfile("./temporary_directory/{}.discarded".format(subfile[0]),"./{}/{}/Discarded".format(dataset, subfile[0]))

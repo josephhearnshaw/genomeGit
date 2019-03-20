@@ -15,11 +15,11 @@ from subprocess import Popen
 #sized files. Additionally it has to return the updated index.
 def parse_cntg(seq,number,map_file,folder,seq_index):
 	#Save the input arguments
-	current_nucleotides=seq
-	i=number
-	map=map_file
-	current_dir=folder
-	index=seq_index
+	current_nucleotides = seq
+	i = number
+	map = map_file
+	current_dir = folder
+	index = seq_index
 	#If the file is empty, this means the sequence started with Ns (this may occur during scaffold parsing).
 	#In this case, do not write a contig file (it would be empty)
 	if(len(current_nucleotides)==0):
@@ -27,18 +27,19 @@ def parse_cntg(seq,number,map_file,folder,seq_index):
 	#If the length of the contig is smaller than 250.000 nt, write a single file
 	elif (len(current_nucleotides)<250000):
 		#Write the file
-		output_file=open(current_dir+"/Sequence"+str(i), "w+")
+		output_file=open("{}/Sequence{}".format(current_dir, str(i)), "w+")
 		output_file.write(current_nucleotides)
-		output_file.close()
+		#output_file.close()
 		#Write in the map file
-		map.write(current_dir+"/Sequence"+str(i)+"\t"+str(index)+" "+str(index+len(current_nucleotides)-1)+"\n")
+		map.write("{}/Sequence{}\t{} {}\n".format(current_dir, str(i), str(index),
+		 			str(index+len(current_nucleotides)-1)))
 		index=index+len(current_nucleotides)
 	#If this contig is bigger than 250.000 nt, split it into files of 100.000 nt each
 	else:
 		#Divide the current contig into chunks of 100.000 nt
 		chunks=[current_nucleotides[y:y+100000] for y in range(0, len(current_nucleotides), 100000)]
 		#Create a new folder to store those chunks
-		current_dir=current_dir+"/Sequence"+str(i)
+		current_dir = "{}/Sequence{}".format(current_dir, str(i))
 		os.mkdir(current_dir)
 		#Create chunk_count
 		chunk_count=0
@@ -46,16 +47,17 @@ def parse_cntg(seq,number,map_file,folder,seq_index):
 		for chunk in chunks:
 			chunk_count=chunk_count+1
 			#Write the file
-			output_file=open(current_dir+"/Sequence"+str(chunk_count),"w+")
+			output_file=open("{}/Sequence{}".format(current_dir, str(chunk_count)),"w+")
 			output_file.write(chunk)
-			output_file.close()
+			#output_file.close()
 			#Write in the map file
-			map.write(current_dir+"/Sequence"+str(chunk_count)+"\t"+str(index)+" "+str(index+len(chunk)-1)+"\n")
+			map.write("{}/Sequence{}\t{} {}\n".format(current_dir, str(chunk_count),
+						str(index), str(index+len(chunk)-1)))
 			index=index+len(chunk)
 	#Return the updated index
 	return index
 
-#Define the parse scaffold function. This function will take a nucleotide sequence, the map file, the current folder and the sequence index as input parameters. 
+#Define the parse scaffold function. This function will take a nucleotide sequence, the map file, the current folder and the sequence index as input parameters.
 #It will create a folder for each scaffold, and pass each contig to the parse_cntg function.It has to return an updated index.
 def parse_scf(seq,folder,map_file,seq_index):
 	#Save the arguments
@@ -110,7 +112,7 @@ def parse_super(seq_list,gap_list,folder,map_file):
 		if(len(super_subseq_list[x])==0):
 			#Unless this empty supergap is at the end (this would mean the sequence ends with Ns), update the map file
 			if(x!=len(super_gaps_list)):
-				map.write("N\t"+str(index)+" "+str(index+len(super_gaps_list[x])-1)+"\n")
+				map.write("N\t{} {}\n".format(str(index), str(index+len(super_gaps_list[x])-1)))
 				index=index+len(super_gaps_list[x])
 		#If this sequence is a contig, store its content in a new file and write the roadmap
 		elif(IsContig(super_subseq_list[x])):
@@ -119,19 +121,19 @@ def parse_super(seq_list,gap_list,folder,map_file):
 			#Only if this is not the last super subsequence, write in the map file the Ns
 			if(x!=len(super_gaps_list)):
 				#Write in the map file
-				map.write("N\t"+str(index)+" "+str(index+len(super_gaps_list[x])-1)+"\n")
+				map.write("N\t{} {}\n".format(str(index), str(index+len(super_gaps_list[x])-1)))
 				index=index+len(super_gaps_list[x])
 		#If this sequence is a scaffold, store its contigs in a new folder
 		else:
 			#Create a new folder to allocate the scaffold
-			current_subfolder=current_dir+"/Sequence"+str(subseq_count)
+			current_subfolder = "{}/Sequence{}".format(current_dir,str(subseq_count))
 			os.mkdir(current_subfolder)
 			#Parse the scaffold
 			index=parse_scf(seq=super_subseq_list[x],folder=current_subfolder,map_file=map,seq_index=index)
 			#Only if this is not the last super subsequence, write in the map file the N gap
 			if(x!=len(super_gaps_list)):
 				#Write the map file
-				map.write("N\t"+str(index)+" "+str(index+len(super_gaps_list[x])-1)+"\n")
+				map.write("N\t{} {}\n".format(str(index), str(index+len(super_gaps_list[x])-1)))
 				index=index+len(super_gaps_list[x])
 
 #Create a parse nucleotides function. This function parses the nucleotides of a sequence using parse_cntg, parse_scf and parse_super.
@@ -235,7 +237,7 @@ def parse_dependent_dict(DependentDict):
 		#Create subfiles for 1MB regions
 		#Write in the seqID map
 		seqID_map.write(">"+key+"\t/Sequence"+str(seq_count)+"\n")
-		#Create a folder for the sequence and open the first subfile 
+		#Create a folder for the sequence and open the first subfile
 		os.mkdir("./Sequence"+str(seq_count))
 		#Loop through the regions stored in the dictionary {seqID:{1M:[line[1:],],2M:[],}}
 		for region in DependentDict[key].keys():
@@ -253,7 +255,7 @@ def parse_dependent_dict(DependentDict):
 
 #Create a parse dataset function to parse a given dataset in a file into the repository structure
 def parse_dataset(dataset,input_path,size,update):
-	
+
 	#	PARSE A GENOME DATASET
 
 	#If the file to be parsed is a genome file.
@@ -388,7 +390,7 @@ def parse_dataset(dataset,input_path,size,update):
 		#Close the files
 		comment_file.close()
 		annotation_file.close()
-		#Use the parse dependent dict function to parse the information contained in the resulting dictionary into the repo	
+		#Use the parse dependent dict function to parse the information contained in the resulting dictionary into the repo
 		parse_dependent_dict(DependentDict=annotation_dict)
 		#If it is an update it is required to update the repomap
 		if(update):
@@ -473,7 +475,7 @@ def parse_dataset(dataset,input_path,size,update):
 		#Close the files
 		comment_file.close()
 		variants_file.close()
-		#Use the parse dependent dict function to parse the information contained in the resulting dictionary into the repo	
+		#Use the parse dependent dict function to parse the information contained in the resulting dictionary into the repo
 		parse_dependent_dict(DependentDict=variants_dict)
 		#If this is an update it is required to update the repomap
 		if(update):
@@ -514,10 +516,14 @@ def parse_dataset(dataset,input_path,size,update):
 		# NEW
 		# Convert BAM to SAM if the input file is BAM
 		if ('.bam' in input_path):
-			samOutput_path = os.path.splitext(input_path)[0] + ".sam"
-			ShellCommand = Popen("samtools view -h -o " + samOutput_path + " " + input_path, shell=True).wait()
+			samOutput_path = "{}.sam".format(os.path.splitext(input_path)[0])
+			Popen("samtools view -h -o {} {}".format(samOutput_path, input_path), shell=True).wait()
 			# New path for this file is .sam instead of .bam
 			input_path = samOutput_path
+
+			#Create a check file to indicate if it was converted(will be used in reconstruct_functions.py)
+			check_file = open("./converted.txt", "w+")
+			check_file.close()
 		# NEW
 
 		if(update):
@@ -536,7 +542,7 @@ def parse_dataset(dataset,input_path,size,update):
 			#Close the file
 			repomap.close()
 			#Open the file with write permit and write all the elements of the repo list
-			repomap=open("../../RepoMap.txt","w")
+			repomap=open("../../RepoMap.txt","w+")
 			for line in repo_list:
 				repomap.write(line)
 		#Otherwise simply append a new line to the repomap
@@ -605,13 +611,13 @@ def parse_dataset(dataset,input_path,size,update):
 				mapfile.write("/"+seqID_dict[seqID]+"/"+subfile+"\n")
 		#Close the map file
 		mapfile.close()
-		
+
 	#	RAISE AN ERROR
-	
+
 	#Otherwise there was a problem
 	else:
 		print("\n***INTERNAL ERROR: DATASET NOT RECOGNISED: "+dataset+"\n")
-	
+
 	#Exit the function
 	return
 
@@ -678,8 +684,6 @@ def parse_coords_file(file_path):
 			#Otherwise create a new entry in the dictionary
 			else:
 				coords_dict[line[9]]=["\t".join(line)]
-			
+
 	#Return the dictionary
 	return coords_dict
-
-

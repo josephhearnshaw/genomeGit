@@ -39,9 +39,9 @@ def weld_cracks(file_crack):
 					for line in crack:
 						final_file.write(line)
 				#Close the file
-				#crack.close()
+				crack.close()
 		#Close the file
-		#final_file.close()
+		final_file.close()
 
 #Create a function to eliminate repeated barcodes in sub SAM files (this can mess arround with the merge process)
 def prepare_barcode(infile,outfile,dataset):
@@ -75,8 +75,8 @@ def prepare_barcode(infile,outfile,dataset):
 					output_file.write("\t".join(line))
 				old_index=new_index
 		#Close all files
-		#output_file.close()
-	#input_file.close()
+		output_file.close()
+	input_file.close()
 
 #Create a function to merge the two SAM/GFF/VCF subfiles
 def merge_subfiles(dataset,subfile_name,template_length):
@@ -172,10 +172,10 @@ def merge_subfiles(dataset,subfile_name,template_length):
 						#Read as well the next one in the metadata
 						line_metadata=metadata.readline().split("\t")
 		#Close the files
-		#file_A.close()
-		#file_B.close()
-		#updated_file.close()
-		#discarded_file.close()
+		file_A.close()
+		file_B.close()
+		updated_file.close()
+		discarded_file.close()
 	#If it is annotation
 	elif(dataset=="Annotation"):
 		#Open the updated and discarded files
@@ -246,10 +246,10 @@ def merge_subfiles(dataset,subfile_name,template_length):
 						#Read as well the next one in the metadata
 						line_metadata=metadata.readline().split("\t")
 		#Close the files
-		#file_A.close()
-		#file_B.close()
-		#updated_file.close()
-		#discarded_file.close()
+		file_A.close()
+		file_B.close()
+		updated_file.close()
+		discarded_file.close()
 	#Otherwise it is variants: only one subfile
 	else:
 		#Open the updated and discarded files
@@ -291,12 +291,12 @@ def merge_subfiles(dataset,subfile_name,template_length):
 					#Re-adjust by reading the next line in the metadata and split it by the tabs
 					line_metadata=metadata.readline().split("\t")
 		#Close the files
-		#file_A.close()
-		#updated_file.close()
-		#discarded_file.close()
+		file_A.close()
+		updated_file.close()
+		discarded_file.close()
 
 	#Close metadata
-	#metadata.close()
+	metadata.close()
 
 #Create a function to start a given function and its arguments in a subprocess in the shell. It will need to update the number of processes being processed and the number already processed
 # def call_batch(function,argument):

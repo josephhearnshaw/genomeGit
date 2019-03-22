@@ -105,9 +105,9 @@ def calculate_MashMap_score(Blocks, lengthA, lengthB):
 		#The current query starts are sorted in ascending order; no need to check their order
 		#If current query start pos is greater than previous start pos, add one.
 		#Otherwise deduct 1 from coherence
-		if(query_end > prev_query_end ):
+		if(query_start > prev_query_start and query_end > prev_query_end ):
 			coherence += 1
-		elif(query_end < prev_query_end):
+		elif(query_start > prev_query_start and query_end < prev_query_end):
 			coherence -= 1
 		#Make prevblock equal to the previous block
 		prevblock = current_block
@@ -162,10 +162,12 @@ def parse_mashMap_output_to_Dict(input_file):
 
 	return Unfiltered_MashDict
 
-def find_best_alignment(query_length, alignment_dict):
+def find_best_mashmap_alignment(query_length, alignment_dict):
 	"""This function takes the query length and the alignment dictionary. It will then
    find the best alignments and return the reference key and score associated with those
-   alignments"""
+   alignments
+
+   This is for MashMap"""
 
 	#Obtain the keys
 	refs = list(alignment_dict.keys())
@@ -244,9 +246,13 @@ def filter_mashMap(mash_file, directory, alignment_pickle, out_file, threads):
 		query_length = query_key[1]
 		alignments = Unfiltered_MashDict[query_key]
 
-		ref_key, score = find_best_alignment(query_length, alignments)
+
+		ref_key, score = find_best_mashmap_alignment(query_length, alignments)
 		ref_ID = ref_key[0]
 		#Query
+
+		query_ID, ref_ID = ref_ID, query_ID
+
 		query_file_name = 'tmp_delta/{}_{}_query'.format(query_ID, ref_ID)
 		retrieve_fasta_sequence_and_make_fifo(fasta_query, query_ID, query_file_name)
 
@@ -260,7 +266,7 @@ def filter_mashMap(mash_file, directory, alignment_pickle, out_file, threads):
 		print("\n\t\t -Running Nucmer now for reference {} and query {} at {}"
 			.format(ref_ID, query_ID, str(datetime.datetime.now())))
 		# print('Running nucmer for {} and {} at {}\n'.format(query_ID, ref_ID, str(datetime.datetime.now())))
-		tp.apply_async(get_sequences, (ref_file_name, query_file_name, name_out, threads, score ))
+		tp.apply_async(get_sequences_mashmap, (ref_file_name, query_file_name, name_out, threads, score ))
 		#Increase the count by one
 		count += 1
 	#Close and join the thread pool and delete the temporary directories once done
@@ -278,7 +284,7 @@ def filter_mashMap(mash_file, directory, alignment_pickle, out_file, threads):
 	shutil.rmtree('tmp_delta')
 
 
-def get_sequences(ref_file_name, query_file_name, name_out, threads, score):
+def get_sequences_mashmap(ref_file_name, query_file_name, name_out, threads, score):
 	""" This function runs the best alignments through nucmer """
 	command = ['nucmer', '--forward', '--mum', ref_file_name,
                query_file_name, '-p', name_out, '-t', threads]
@@ -287,7 +293,7 @@ def get_sequences(ref_file_name, query_file_name, name_out, threads, score):
 	Popen("sed 's/^>.*/& {}/' {} -i".format(score, name_out + ".delta"), shell = True).wait()
 
 
-def calculate_score(Blocks, length_A, length_B):
+def calculate_nucmer_score(Blocks, length_A, length_B):
 	""" This function calculates the score as described in documentation.
 	Requires each block and the respective alignment lengths"""
 
@@ -320,7 +326,7 @@ def calculate_score(Blocks, length_A, length_B):
 	return score
 
 
-def parse_delta_file(input_file):
+def prase_nucmer_delta_file(input_file):
 	""" Parses the delta file into an 'unfiltered delta dict'.
 	Requires the input delta file """
 	Unfiltered_DeltaDict = {} #{>alignment:[blocks and modifications]}
@@ -336,35 +342,40 @@ def parse_delta_file(input_file):
 			Unfiltered_DeltaDict[current_key].append(line)
 	return Unfiltered_DeltaDict
 
-def find_best_delta_alignment(Unfiltered_DeltaDict):
+def find_best_nucmer_alignment(Unfiltered_DeltaDict):
 	"""This function finds the best alignments, based on score, and adds it to the
 	filtered dictionary. Requires the unfiltered dictionary """
 	Filtered_DeltaDict = {} #{old_seqID:[>alignment,[blocks and modifications],score]}
 	for alignment in Unfiltered_DeltaDict.keys():
 		#Obtain all alignments
 		all_alignments = alignment
+
+
 		#Obtain blocks
 		Blocks = Unfiltered_DeltaDict[alignment]
 		alignment = alignment.split()
 		#Obtain the lengths
 		length_A, length_B = alignment[2:4]
-		score = calculate_score(Blocks, length_A, length_B)
+		ref, query = alignment[0:2]
+		ref=ref[1:]
+		score = calculate_nucmer_score(Blocks, length_A, length_B)
 		# If the score is greater than the current score, then add to the new dictionary
 		try:
-			if(score > Filtered_DeltaDict[alignment[0]][2]):
-				Filtered_DeltaDict[alignment[0]]=[all_alignments,
-					Unfiltered_DeltaDict[all_alignments], score]
+			old_score = Filtered_DeltaDict[query][2]
+			if(score > old_score):
+				Filtered_DeltaDict[query]=[all_alignments,
+					Blocks, score]
 		#If it is the first alignment of this old seqID, add it to the filtered dictionary
 		except KeyError:
-			Filtered_DeltaDict[alignment[0]]=[all_alignments,
-				Unfiltered_DeltaDict[all_alignments], score]
+			Filtered_DeltaDict[query]=[all_alignments,
+				Blocks, score]
 	return Filtered_DeltaDict
 
 
-def write_delta(Filtered_DeltaDict, file_directory_line, nucmer_line, out_file):
+def write_nucmer_delta(Filtered_DeltaDict, file_directory_line, nucmer_line, out_file):
 	""" This function writes the Filtered Dictionary out for further use """
 		#Write the contents of Filtered_delta into a new Filtered delta file
-	with open(out_file, "w+") as output_file:
+	with open(out_file, "w") as output_file:
 		#Write the first and second lines (file path to fasta files and NUCMER line)
 		output_file.write("{}\n".format(file_directory_line))
 		output_file.write("{}\n".format(nucmer_line))
@@ -379,7 +390,7 @@ def write_delta(Filtered_DeltaDict, file_directory_line, nucmer_line, out_file):
 
 
 #Create a function filter_delta to filter the results in the multi-delta so that it only contains the best alignment of each query sequence
-def filter_delta(delta_file, out_file):
+def filter_nucmer_delta(delta_file, out_file):
 	"""This function filters the delta file according to score, and writes it out.
 	Requires a delta-file and out directory"""
 	Filtered_DeltaDict = {}	#{old_seqID:[>alignment,[blocks and modifications],score]}
@@ -387,9 +398,9 @@ def filter_delta(delta_file, out_file):
 		#Obtaining the file directory and NUCMER line
 		file_directory_line = input_file.readline().rstrip()
 		nucmer_line = input_file.readline().rstrip()
-		Unfiltered_DeltaDict = parse_delta_file(input_file)
-	Filtered_DeltaDict = find_best_delta_alignment(Unfiltered_DeltaDict)
-	write_delta(Filtered_DeltaDict, file_directory_line, nucmer_line, out_file)
+		Unfiltered_DeltaDict = prase_nucmer_delta_file(input_file)
+	Filtered_DeltaDict = find_best_nucmer_alignment(Unfiltered_DeltaDict)
+	write_nucmer_delta(Filtered_DeltaDict, file_directory_line, nucmer_line, out_file)
 
 def multiFasta_construct(directory, OldAssembly_Dict, NewAssembly_Dict, OldNewID_Dict):
 	""" creates a multifasta file for each assembly
@@ -397,13 +408,13 @@ def multiFasta_construct(directory, OldAssembly_Dict, NewAssembly_Dict, OldNewID
 		Requires the directories and dictionaries """
 
 	#Old assembly multi-fastafile
-	with open("{}/Compare_OldAssembly.fa".format(directory), "w+") as output_file:
+	with open("{}/Compare_OldAssembly.fa".format(directory), "w") as output_file:
 		for oldID in OldAssembly_Dict.keys():
 				if not oldID in OldNewID_Dict.keys():
 					output_file.write(">{}\n{}\n".format(oldID, "".join(OldAssembly_Dict[oldID][1])))
 		#New assembly multi-fastafile
 	output_file.close()
-	with open("{}/Compare_NewAssembly.fa".format(directory), "w+") as output_file:
+	with open("{}/Compare_NewAssembly.fa".format(directory), "w") as output_file:
 		for newID in NewAssembly_Dict.keys():
 			if not newID in OldNewID_Dict.values():
 				output_file.write(">{}\n{}\n".format(newID, "".join(NewAssembly_Dict[newID][1])))
@@ -442,11 +453,11 @@ def aligner_caller(aligner_switch, threads, nucmer_directory, reference_director
             #Filter the delta file
             print("\n\t\t - Filtering resulting alignment to obtain equivalent "\
             "sequences across versions {}".format(str(datetime.datetime.now())))
-            filter_delta(delta_file="{}.delta".format(nucmer_directory), out_file=delta_directory)
+            filter_nucmer_delta(delta_file="{}.delta".format(nucmer_directory), out_file=delta_directory)
         elif aligner_switch == 1:
             print("\t\t\t  - Running MashMap " + str(datetime.datetime.now()))
             ShellCommand_mashMap = ['/usr/local/bin/mashmap', '-s', str(segLength), '-k', str(kmer), '--pi',
-			str(percent_identity), '-t', str(threads), '-r', reference_directory, '-q', query_directory,
+			str(percent_identity), '-t', str(threads), '-r', query_directory, '-q', reference_directory,
                 '-o', mashmap_directory]
             Popen(ShellCommand_mashMap).wait()
             print("\n\t\t - Filtering and realigning resulting alignment(s) to obtain equivalent "\

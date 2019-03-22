@@ -49,7 +49,7 @@ def prepare_barcode(infile,outfile,dataset):
 	old_index="0"
 	with open(infile,"r") as input_file:
 		#Open the output file and loop through the lines of the input file
-		output_file=open(outfile,"w+")
+		output_file=open(outfile,"w")
 		#If annotation/alignment
 		if(dataset!="Variants"):
 			for line in input_file:
@@ -93,12 +93,12 @@ def merge_subfiles(dataset,subfile_name,template_length):
 	if(dataset=="Alignment"):
 		#Open the updated and discarded files
 		updated_file=open("./temporary_directory/{}".format(subfile_name),"a")	#Open the updated file in append mode since it already contains the comments
-		discarded_file=open("./temporary_directory/{}.discarded".format(subfile_name),"w+")
+		discarded_file=open("./temporary_directory/{}.discarded".format(subfile_name),"w")
 		#First thing required is to prepare the barcodes in the subfiles: eliminate repeated barcodes
 		prepare_barcode(infile="./temporary_directory/sorted_updated_{}_A".format(subfile_name),
 		outfile="./temporary_directory/BarcodeReady_{}_A".format(subfile_name),dataset=dataset)
 		prepare_barcode(infile="./temporary_directory/sorted_updated_{}_B".format(subfile_name),
-		outfile="./temporary_directory/BarcodeReady_{}".format(subfile_name),dataset=dataset)
+		outfile="./temporary_directory/BarcodeReady_{}_B".format(subfile_name),dataset=dataset)
 		#Open the files
 		file_A=open("./temporary_directory/BarcodeReady_{}_A".format(subfile_name),"r")
 		file_B=open("./temporary_directory/BarcodeReady_{}_B".format(subfile_name),"r")
@@ -180,7 +180,7 @@ def merge_subfiles(dataset,subfile_name,template_length):
 	elif(dataset=="Annotation"):
 		#Open the updated and discarded files
 		updated_file=open("./temporary_directory/{}".format(subfile_name),"a")	#Open the updated file in append mode since it already contains the comments
-		discarded_file=open("./temporary_directory/{}.discarded".format(subfile_name),"w+")
+		discarded_file=open("./temporary_directory/{}.discarded".format(subfile_name),"w")
 		#First thing required is to prepare the barcodes in the subfiles: eliminate repeated barcodes
 		prepare_barcode(infile="./temporary_directory/sorted_updated_{}_A".format(subfile_name),
 		outfile="./temporary_directory/BarcodeReady_{}_A".format(subfile_name),dataset=dataset)
@@ -254,7 +254,7 @@ def merge_subfiles(dataset,subfile_name,template_length):
 	else:
 		#Open the updated and discarded files
 		updated_file=open("./temporary_directory/{}".format(subfile_name),"a")	#Open the updated file in append mode since it already contains the comments
-		discarded_file=open("./temporary_directory/{}.discarded".format(subfile_name),"w+")
+		discarded_file=open("./temporary_directory/{}.discarded".format(subfile_name),"w")
 		#First thing required is to prepare the barcodes in the subfiles: eliminate repeated barcodes
 		prepare_barcode(infile="./temporary_directory/sorted_updated_{}_A".format(subfile_name),
 		outfile="./temporary_directory/BarcodeReady_{}_A".format(subfile_name),dataset=dataset)
@@ -337,7 +337,7 @@ def update_sequence(query, processing):
 	elif(tabix_queries[query][0]=="reversed"):
 		#Open the query output file, updated and there is no need for discarded file (identical reverse sequence)
 		query_outfile=open(tabix_queries[query][5],"r")
-		updated_file=open(tabix_queries[query][6],"w+")
+		updated_file=open(tabix_queries[query][6],"w")
 		#Determine the lenght of the sequence
 		length=int(tabix_queries[query][8])
 		#Loop through the lines of the outfile
@@ -359,7 +359,7 @@ def update_sequence(query, processing):
 		displacement_factor=int(tabix_queries[query][8][2])-int(tabix_queries[query][8][0])
 		#Open the query output file, updated and the discarded file
 		query_outfile=open(tabix_queries[query][5],"r")
-		updated_file=open(tabix_queries[query][6],"w+")
+		updated_file=open(tabix_queries[query][6],"w")
 		#Loop through the entries resulting out of the tabix query
 		for entry in query_outfile:
 			#Split the entry by the tabs

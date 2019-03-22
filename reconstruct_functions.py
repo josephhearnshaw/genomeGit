@@ -7,6 +7,8 @@ import re
 import os
 import sys
 import subprocess
+#NEW import
+from subprocess import Popen
 
 #Create a function to return the commit hash for a given commit message
 def MessageToHash(message):
@@ -321,8 +323,11 @@ def reconstruct_dataset(size,directory,output_file,mode,seqID="0",region="0",upd
 								#Check that the line index is within the region, otherwise stop
 								if(int(line[3])<region_stop and int(line[3])>region_start):
 									reconstruct.write("\t".join(line))
-						#Close the file
-						subfile.close()
+
+						# NEW, check if the converted.txt file is generated from parse_functions.py
+						if (os.path.isfile(directory + "/converted.txt")):
+							convertSAMtoBAM(subfile.name)
+
 				#Otherwise it is annotation
 				else:
 					#Loop through the list of files and append thos entries inside the region
@@ -367,6 +372,10 @@ def reconstruct_dataset(size,directory,output_file,mode,seqID="0",region="0",upd
 			#Close the reconstruct file
 			reconstruct.close()
 
+			# NEW, check if the converted.txt file is generated from parse_functions.py
+			if (os.path.isfile(directory + "/converted.txt")):
+				convertSAMtoBAM(reconstruct.name)
+
 	###	REGULAR RECONSTRUCTION
 
 	#Otherwise this is a normal reconstruction of annotation/variants/alignment dataset
@@ -376,7 +385,9 @@ def reconstruct_dataset(size,directory,output_file,mode,seqID="0",region="0",upd
 		#Open the comment file and append it to the reconstructed file
 		comments=open(directory+"/Comments.txt","r")
 		#Only append comments if filemode is different than append (no comments if the user reconstruct a region)
-		if(filemode!="a"):
+
+		#NEW, reversed the if check, it should add comments if the entire file reconstructed
+		if(filemode == "a"):
 			for line in comments:
 				reconstruct.write(line)
 		#Open the seqID map
@@ -391,11 +402,22 @@ def reconstruct_dataset(size,directory,output_file,mode,seqID="0",region="0",upd
 				#Append all the lines of the file to the reconstruct
 				for l in comments:
 					reconstruct.write(l)
-		#Close the files
-		comments.close()
-		seqID_map.close()
-		#Close the reconstruct ile
+
+		# Close the files
 		reconstruct.close()
+		seqID_map.close()
+		comments.close()
+
+		#NEW, check if the converted.txt file is generated from parse_functions.py
+		if (os.path.isfile(directory + "/converted.txt")):
+			convertSAMtoBAM(reconstruct.name)
+
+#NEW, convert from SAM to BAM
+def convertSAMtoBAM(filename):
+	# Convert SAM back to BAM and remove the SAM file
+	print("Now converting SAM to BAM")
+	Popen("samtools view -S -b -h -o ../Extracted_Alignment.bam" + " " + filename, shell=True).wait()
+	os.remove("../Extracted_Alignment.sam")
 
 #Create a obtain_file function to obtain the dataset and line size of a given file
 def obtain_file(target,mode):

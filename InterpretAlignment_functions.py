@@ -288,6 +288,9 @@ def merge_subfiles(dataset, subfile_name, template_length):
                     line_metadata[1] = line_A[0]
                     line_metadata[2] = line_A[1]
                     # NEW - handling inversions
+                    #############################
+                    ##### DETECT INVERSIONS #####
+                    #############################
                     inversion_list = open("./temporary_directory/inversions.txt", "r")
                     inversion_list = inversion_list.readline().split()
                     # Check if the reference ID's match
@@ -298,10 +301,6 @@ def merge_subfiles(dataset, subfile_name, template_length):
                     updated_file.write("\t".join(line_metadata[1:]))
                     # Read the next line
                     line_metadata = metadata.readline().split("\t")
-                    # print(line_metadata)
-                    # list2 = [x for x in line_metadata if x]
-                    #
-                    # print(list2)
                     line_A = file_A.readline().rstrip().split("\t")
                 # Otherwise the variant was discarded. Need to discard the entire line and re-adjust
                 else:
@@ -410,7 +409,6 @@ def update_sequence(query, processing):
                 #############################
                 ##### DETECT INVERSIONS #####
                 #############################
-                # Check if there was an INVERSION
                 if(tabix_queries[query][8][0] == tabix_queries[query][8][3] and tabix_queries[query][8][1] == tabix_queries[query][8][2]):
                     # get length
                     query_length = (int(tabix_queries[query][8][1])-int(tabix_queries[query][8][0]))

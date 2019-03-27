@@ -291,13 +291,17 @@ def merge_subfiles(dataset, subfile_name, template_length):
                     #############################
                     ##### DETECT INVERSIONS #####
                     #############################
-                    inversion_list = open("./temporary_directory/inversions.txt", "r")
-                    inversion_list = inversion_list.readline().split()
-                    # Check if the reference ID's match
-                    if(inversion_list[1] == line_metadata[1]):
-                        line_metadata[4] = reverse_comp(line_metadata[4])
-                        line_metadata[5] = reverse_comp(line_metadata[5])
-                        # Write the line in the output file,omit the barcode.
+                    # Check if the file exists
+                    try:
+                        inversion_list = open("./temporary_directory/inversions.txt", "r")
+                        inversion_list = inversion_list.readline().split()
+                        # Check if the reference ID's match
+                        if(inversion_list[1] == line_metadata[1] or inversion_list[0] == line_metadata[1]):
+                            line_metadata[4] = reverse_comp(line_metadata[4])
+                            line_metadata[5] = reverse_comp(line_metadata[5])
+                    except IOError:
+                        pass
+                    # Write the line in the output file,omit the barcode.
                     updated_file.write("\t".join(line_metadata[1:]))
                     # Read the next line
                     line_metadata = metadata.readline().split("\t")
@@ -387,6 +391,8 @@ def update_sequence(query, processing):
 
         # Determine the displacement factor
         displacement_factor = int(tabix_queries[query][8][2])-int(tabix_queries[query][8][0])
+        # get displacement factor for inversions
+        displacement_factor_inversions = (int(tabix_queries[query][8][1])-int(tabix_queries[query][8][0]))
         # Open the query output file, updated and the discarded file
         query_outfile = open(tabix_queries[query][5], "r")
         updated_file = open(tabix_queries[query][6], "w")
@@ -401,29 +407,30 @@ def update_sequence(query, processing):
             # Evaluate the entry inly if it is inside the block. NO NEED FOR THIS, IT WILL ALWAYS BE IN THE BLOCK THANKS TO TABIX
             # if(entry_index>=old_block_start) and (entry_index<=old_block_stop):
             # Determine if it is necessary to update the entry (maybe there is no change)
-            if(displacement_factor == 0) and (tabix_queries[query][8][1] == tabix_queries[query][8][3]) and (len(tabix_queries[query][9]) == 0):
+            if(displacement_factor == 0 and tabix_queries[query][8][1] == tabix_queries[query][8][3] and len(tabix_queries[query][9]) == 0):
                 # Add the unchanged entry in the updated list.
                 updated_file.write("\t".join(entry))
             # Otherwise there was a change
+
             else:
                 #############################
                 ##### DETECT INVERSIONS #####
                 #############################
-                if(tabix_queries[query][8][0] == tabix_queries[query][8][3] and tabix_queries[query][8][1] == tabix_queries[query][8][2]):
-                    # get length
-                    query_length = (int(tabix_queries[query][8][1])-int(tabix_queries[query][8][0]))
+                if(int(tabix_queries[query][8][2]) > int(tabix_queries[query][8][3])):
+                    # get displacement factor for inversions
+                    displacement_factor = (int(tabix_queries[query][8][1])-int(tabix_queries[query][8][0]))
                     # Write out the names as query and reference
                     inversion_file = open("./temporary_directory/inversions.txt", "w")
                     inversion_file.write("{}\t{}\n".format(tabix_queries[query][4], entry[0]))
                     # Alter the entry accordingly - +2 as its index starts at 0 on one side and also on the other so +1 x 2 = 2
-                    entry[1] = str(query_length-int(entry[1])+2)
+                    entry[1] = str(displacement_factor_inversions-entry_index+2)
                     # get the reverse complement
-                    entry[2] = reverse_comp(entry[2])
+                    # entry[2] = reverse_comp(entry[2])
                     # update the file
                     updated_file.write("\t".join(entry))
 
                 else:
-                    # If there were no modifications, just add the displacement factor
+                        # If there were no modifications, just add the displacement factor
                     if(len(tabix_queries[query][9]) == 0):
                         entry[1] = str(entry_index+displacement_factor)
                         updated_file.write("\t".join(entry))
@@ -483,7 +490,7 @@ def interpret_alignment(queries, oldnew, threads, ToUpdate, tlength, filecrack):
             for subfile in ToUpdate[dataset]:
                 # Add the comments of the original file into the updated one
                 ShellCommand = Popen(
-                    "cp ./"+subfile[1]+"/Comments.txt ./temporary_directory/"+subfile[0], shell=True).wait()
+                    "cp ./{}/Comments.txt ./temporary_directory/{}".format(subfile[1], subfile[0]), shell=True).wait()
     # From now on this part can be threaded, one thread analysing one tabix query at a time. The dictionaries must be made global otherwise they will be overwriten.
     query_count = 0
     # NEW, added list(), python3 returns view if you access .keys
@@ -492,7 +499,6 @@ def interpret_alignment(queries, oldnew, threads, ToUpdate, tlength, filecrack):
 
     # While there are sequence alignments to be processed
     print("\n\t\t - Now processing tabix queries at {}".format(str(datetime.datetime.now())))
-    #### MAY NEED TO CHANGE THIS #####
 
     pool = multiprocessing.Pool(number_threads)
     while(processing != len(all_queries)):

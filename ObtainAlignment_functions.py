@@ -74,8 +74,6 @@ def parse_snp_file(file_path):
             snp_seqID = line[10]
             if(snp_seqID in snp_dict.keys()):
                 snp_dict[snp_seqID].append(" ".join([oldIndex, oldChar, newChar, newIndex, snp_seqID]))
-                print(snp_seqID)
-
             # Otherwise create a new list
             else:
                 snp_dict[snp_seqID] = [" ".join([oldIndex, oldChar, newChar, newIndex])]
@@ -289,7 +287,7 @@ to nucmer for alignment."""
 
 def get_sequences_mashmap(ref_file_name, query_file_name, name_out, threads, score):
     """ This function runs the best alignments through nucmer """
-    command = ['nucmer',  '--mum', ref_file_name,
+    command = ['nucmer', '--forward',  '--mum', ref_file_name,
                query_file_name, '-p', name_out, '-t', threads]
     # Add score to each delta file at the end of the alignment header line
     Popen(command).wait()

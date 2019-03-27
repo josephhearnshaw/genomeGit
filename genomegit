@@ -75,6 +75,7 @@ elif [ "$1" = "add" ]; then
 			percent_identity=95
 			kmer=16
 			segLength=5000
+			inversions=0
 			#Loop through the arguments
 			for WORD; do
 				case $WORD in
@@ -142,6 +143,16 @@ elif [ "$1" = "add" ]; then
 								#Shift the arguments (jump to the next)
 							shift
 							;;
+						--inv=*|--inversions=*)
+							#Determine which aligner was chosen
+							inversions=${1#*=}
+							if ! [[ "$inversions" =~ ^[0-9]+$ ]] || ! [ "$inversions" -ge 1 ]; then
+								echo "Invalid inversions setting selected, defaulting it to forwards flag."
+								inversions=0
+							fi
+								#Shift the arguments (jump to the next)
+							shift
+							;;
 					#If the current argument is the optional --no-update, avoid the auto update
 					--no-update*)
 						#Inform the user
@@ -171,7 +182,7 @@ elif [ "$1" = "add" ]; then
 								echo "$class dataset detected. Now parsing $filename into git-compatible objects."
 								#Parse and add the dataset. Arguments: class file threads size tlenght
 								bash $source/parse_file.bash "$class" "$filename" "$threads" "$filesize" "$tlength" "$aligner"\
-								"$percent_identity" "$kmer" "$segLength"
+								"$percent_identity" "$kmer" "$segLength" "$inversions"
 							#if it corresponds with a genome dataset, do not perform auto-update
 							elif [ "$class" = "Genome" ]; then
 								#Save the file size in MB
@@ -253,7 +264,7 @@ elif [ "$1" = "add" ]; then
 								echo "$class dataset detected. Now parsing $filename into git-compatible objects."
 								#Parse and add the dataset. Arguments: class file threads size tlenght
 								bash $source/parse_file.bash "$class" "$filename" "$threads" "$filesize" "$tlength" "$aligner"\
-								"$percent_identity" "$kmer" "$segLength"
+								"$percent_identity" "$kmer" "$segLength" "$inversions"
 							#Otherwise it was an invalid file
 							else
 								echo "Unrecognised file format: $filename"

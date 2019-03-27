@@ -9,6 +9,8 @@ GenomeGit utilizes git and its commands, as well as the following custom command
 			coordinate migration of VCF, GFF and SAM files will be performed. With optional parameter --aligner or --a, the user can
 			specify between MashMap + Nucmer (--aligner=1/--a=1) or Nucmer only (--aligner=2/--a=2).
 
+			Set --inv or --inversions to greater than 0 if you want to detect inversions (slower).
+
 			***Additional arguments can be passed	to MashMap, including segment length (--segLength/--s), kmer (--kmer/--k), and
 			percent identity (--pi), so you may optimize your aligner for speed and accuracy. All other values are left at
 			default, Nucmer uses --mum and --forwards as of the current	time being.

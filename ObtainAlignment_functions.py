@@ -215,10 +215,9 @@ and memory efficient; improving the speed of reading sequences and using less me
         os.kill(pid, signal.SIGTERM)
 
 
-def filter_mashMap(mash_file, directory, alignment_pickle, out_file, threads):
+def filter_mashMap(mash_file, directory, alignment_pickle, out_file, threads, inversion_flag):
     """ This function Produces Fasta files for the best alignments and passes them
 to nucmer for alignment."""
-
     # Obtain Reference and query fasta files
     reference_directory = "{}/Compare_OldAssembly.fa".format(directory)
     query_directory = "{}/Compare_NewAssembly.fa".format(directory)
@@ -267,7 +266,8 @@ to nucmer for alignment."""
         print("\n\t\t -Running Nucmer now for reference {} and query {} at {}"
               .format(ref_ID, query_ID, str(datetime.datetime.now())))
         # print('Running nucmer for {} and {} at {}\n'.format(query_ID, ref_ID, str(datetime.datetime.now())))
-        tp.apply_async(get_sequences_mashmap, (ref_file_name, query_file_name, name_out, threads, score))
+        tp.apply_async(get_sequences_mashmap, (ref_file_name, query_file_name,
+                                               name_out, threads, score, inversion_flag))
         # Increase the count by one
         count += 1
     # Close and join the thread pool and delete the temporary directories once done
@@ -285,12 +285,20 @@ to nucmer for alignment."""
     shutil.rmtree('tmp_delta')
 
 
-def get_sequences_mashmap(ref_file_name, query_file_name, name_out, threads, score):
+def get_sequences_mashmap(ref_file_name, query_file_name, name_out, threads, score, inversion_flag):
     """ This function runs the best alignments through nucmer """
-    command = ['nucmer', '--forward',  '--mum', ref_file_name,
-               query_file_name, '-p', name_out, '-t', threads]
+
+    if(inversion_flag == 1):
+        command = ['nucmer',  '--mum', ref_file_name,
+                   query_file_name, '-p', name_out, '-t', threads]
     # Add score to each delta file at the end of the alignment header line
-    Popen(command).wait()
+        Popen(command).wait()
+    else:
+        command = ['nucmer', str(inversion_flag),  '--mum', ref_file_name,
+                   query_file_name, '-p', name_out, '-t', threads]
+    # Add score to each delta file at the end of the alignment header line
+        Popen(command).wait()
+
     Popen("sed 's/^>.*/& {}/' {} -i".format(score, name_out + ".delta"), shell=True).wait()
 
 
@@ -439,8 +447,16 @@ def file_cracker(ToUpdate, file_crack):
                 file_crack["./temporary_directory/updated_{}_B".format(subfile[0])] = []
 
 
+def inversion_setting(inversions):
+    if(inversions == 0):
+        inversion_flag = '--forward'
+    else:
+        inversion_flag = 1
+    return inversion_flag
+
+
 def aligner_caller(aligner_switch, threads, nucmer_directory, reference_directory, query_directory, mashmap_directory,
-                   alignment_pickle, directory, delta_directory, percent_identity, kmer, segLength):
+                   alignment_pickle, directory, delta_directory, percent_identity, kmer, segLength, inversion_flag):
     """
     This function calls the correct aligner, dependent on what the user selects, and executes
     the respective score algorithm for the selected aligner.
@@ -449,9 +465,14 @@ def aligner_caller(aligner_switch, threads, nucmer_directory, reference_director
     if aligner_switch == 2:
         # Run nucmer with the resulting multifastas. Use threads.
         print("\n\t\t - Running nucmer {}".format(str(datetime.datetime.now())))
-        Shellcommand_nucmer = ['nucmer', '--forward', '--mum', '-t', str(threads), reference_directory,
-                               query_directory, '-p', nucmer_directory]
-        Popen(Shellcommand_nucmer).wait()
+        if(inversion_flag == 1):
+            Shellcommand_nucmer = ['nucmer', '--mum', '-t', str(threads), reference_directory,
+                                   query_directory, '-p', nucmer_directory]
+            Popen(Shellcommand_nucmer).wait()
+        else:
+            Shellcommand_nucmer = ['nucmer', str(inversion_flag), '--mum', '-t', str(threads), reference_directory,
+                                   query_directory, '-p', nucmer_directory]
+            Popen(Shellcommand_nucmer).wait()
         # Filter the delta file
         print("\n\t\t - Filtering resulting alignment to obtain equivalent "
               "sequences across versions {}".format(str(datetime.datetime.now())))
@@ -466,7 +487,7 @@ def aligner_caller(aligner_switch, threads, nucmer_directory, reference_director
               "sequences across versions {}".format(str(datetime.datetime.now())))
         # Filter the MashMap output
         filter_mashMap(mash_file=mashmap_directory, directory=directory, alignment_pickle=alignment_pickle,
-                       out_file=delta_directory,  threads=str(threads))
+                       out_file=delta_directory,  threads=str(threads), inversion_flag=inversion_flag)
 
 
 ################
@@ -474,7 +495,7 @@ def aligner_caller(aligner_switch, threads, nucmer_directory, reference_director
 ################
 
 def obtain_alignment(old_assembly, new_assembly, directory, threads, ToUpdate, alignment_pickle, aligner_switch,
-                     percent_identity, kmer, segLength):
+                     percent_identity, kmer, segLength, inversions):
     """
     ### Function ###
     Performs alignment for the given assemblies.
@@ -503,6 +524,7 @@ def obtain_alignment(old_assembly, new_assembly, directory, threads, ToUpdate, a
     #
     #		finalfilename:	updated_filename.ext	/	discarded_filename.ext
     #		sub_updated/discarded:	updated_filename.ext_chr:x_y_AB	/	discarded_filename.ext_chr:x_y_AB
+    inversion_flag = inversion_setting(inversions)
 
     # summary_Dict {oldID:[status,length]}
     tabix_queries = {}
@@ -622,7 +644,7 @@ def obtain_alignment(old_assembly, new_assembly, directory, threads, ToUpdate, a
 
     aligner_caller(aligner_switch, threads, nucmer_directory, reference_directory,
                    query_directory, mashmap_directory, alignment_pickle, directory, delta_directory,
-                   percent_identity, kmer, segLength)
+                   percent_identity, kmer, segLength, inversion_flag)
 
 # Run show-snps with the resulting filtered delta file
     print("\n\t\t - Identification of SNPs in sequences {}".format(str(datetime.datetime.now())))

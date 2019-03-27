@@ -423,12 +423,46 @@ def update_sequence(query, processing):
                     inversion_file = open("./temporary_directory/inversions.txt", "w")
                     inversion_file.write("{}\t{}\n".format(tabix_queries[query][4], entry[0]))
                     # Alter the entry accordingly - +2 as its index starts at 0 on one side and also on the other so +1 x 2 = 2
-                    entry[1] = str(displacement_factor_inversions-entry_index+2)
+                    #
                     # get the reverse complement
                     # entry[2] = reverse_comp(entry[2])
                     # update the file
-                    updated_file.write("\t".join(entry))
 
+                    ###### UPDATE - CHECKING FOR SNPS ##############
+                        #check if there was any modifications; if there weren't, just take the displacement factor away
+                    if(len(tabix_queries[query][9]) == 0):
+                        entry[1] = str(displacement_factor_inversions-entry_index+2)
+                        updated_file.write("\t".join(entry))
+                    else:
+                        #eLse we'll update the entry index wit the displacement related to the snps
+                        entry_index = displacement_factor_inversions-entry_index+2
+                        for snp in tabix_queries[query][9]:
+                            #get snp info
+                            snp = snp.split()
+                            print("inversions snps: ", snp)
+                            snp[3] = int(snp[3])
+                            if(entry_index >= snp[3]):
+                                print(">3", entry_index, snp)
+                                #If it's an insertion, take one from the index
+                                if(snp[1] == "."):
+                                    print("insertion", entry_index)
+                                    #Take one from the entry_index
+                                    entry_index -= 1
+                                #else it's a deletion
+                                elif(snp[2] == "."):
+                                    print("deletion", entry_index)
+                                    entry_index += 1
+                                #Check to see if it's a substiution
+                                elif(snp[1] != snp[2]):
+                                    entry_index -=1
+                                    print("substitution", entry_index)
+                            #Otherwise this is a substitution, so modify the ref base if a variants
+                                elif(entry_index == snp[3] and tabix_queries[query][2] == "Variants"):
+                                    entry[2] = str(snp[2])
+                                    print(entry[2])
+                        entry[1] = str(entry_index)
+                        updated_file.write("\t".join(entry))
+                ############## END OF CHECKING SNPS ###################
                 else:
                         # If there were no modifications, just add the displacement factor
                     if(len(tabix_queries[query][9]) == 0):
@@ -442,6 +476,7 @@ def update_sequence(query, processing):
                                 # Store the snp information
                             snp = snp.split()
                             snp[3] = int(snp[3])
+                            #print(snp)
                             # If the snp is before the entry position, it affects the entry.
                             # CHECK IT WITH THE NEW INDEX, NOT THE OLD!
                             if(entry_index >= snp[3]):

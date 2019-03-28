@@ -658,7 +658,7 @@ def obtain_alignment(old_assembly, new_assembly, directory, threads, ToUpdate, a
     ## Create the Tabix queries   #
     ###############################
 
-    with open(delta_directory, "r") as delta_file:
+    with open(alignment_pickle+"/Filtered.delta", "r") as delta_file:
             # Ommit the first line
         delta_file.readline()
         # Initate variables
@@ -668,10 +668,10 @@ def obtain_alignment(old_assembly, new_assembly, directory, threads, ToUpdate, a
         for line in delta_file:
                 # If the line starts with >, it is a new alignment
             if(line[0] == ">"):
-                new_alignment = line.split()
-                current_oldID = new_alignment[0][1:]
+                line = line.split()
+                current_oldID = line[0][1:]
                 # Add the new and old Id to the OldNewID_Dict
-                OldNewID_Dict[current_oldID] = new_alignment[1]
+                OldNewID_Dict[current_oldID] = line[1]
                 # Re-start the previous end index and prev_snp
                 prev_end = "1"
                 prev_snp = 0
@@ -684,54 +684,52 @@ def obtain_alignment(old_assembly, new_assembly, directory, threads, ToUpdate, a
             # Otherwise add the block (if it has whitespaces it is a block) and its snps into the delta_dict
             elif(" " in line):
                 # Split the line
-                block = line.rstrip().split()
+                line = line.rstrip().split()
                 # Determine the current snps
-                number_snp = int(block[4])
+                number_snp = int(line[4])
                 current_snp = snp_list[int(prev_snp):int(number_snp+prev_snp)]
-                prev_snp = number_snp + prev_snp
+                prev_snp = number_snp+prev_snp
                 # Add it to the tabix queries dict as a to be compared sequence. Loop through the files of each dataset.
                 for dataset in ToUpdate:
                     # If the dataset is not the genome dataset, create the tabix query
                     if(dataset != "Genome"):
-                            # Loop through the files of the dataset
+                        # Loop through the files of the dataset
                         for subfile in ToUpdate[dataset]:
-                                # Add the query A
-                            query = "tabix ./temporary_directory/{}_A.gz {}:{}-{} > ./temporary_directory/{}_{}:{}_{}_A".format(subfile[0],
-                                                                                                                                current_oldID, block[0], block[1], subfile[0], current_oldID, block[0], block[1])
-                            tabix_queries[query] = ["compare", "_A", dataset, subfile[0], current_oldID,
-                                                    "./temporary_directory/{}_{}:{}_{}_A".format(
-                                                        subfile[0], current_oldID, block[0], block[1]),
-                                                    "./temporary_directory/updated_{}_{}:{}_{}_A".format(
-                                                        subfile[0], current_oldID, block[0], block[1]),
-                                                    "./temporary_directory/discarded_{}_{}:{}_{}_A".format(subfile[0], current_oldID, block[0], block[1]), block[0:4], current_snp]
+                            # Add the query A
+                            query = "tabix ./temporary_directory/" + \
+                                subfile[0]+"_A.gz "+current_oldID+":"+line[0]+"-"+line[1] + \
+                                    " > ./temporary_directory/"+subfile[0]+"_" + \
+                                current_oldID+":"+line[0]+"_"+line[1]+"_A"
+                            tabix_queries[query] = ["compare", "_A", dataset, subfile[0], current_oldID, "./temporary_directory/"+subfile[0]+"_"+current_oldID+":"+line[0]+"_"+line[1]+"_A", "./temporary_directory/updated_" +
+                                                    subfile[0]+"_"+current_oldID+":"+line[0]+"_"+line[1]+"_A", "./temporary_directory/discarded_"+subfile[0]+"_"+current_oldID+":"+line[0]+"_"+line[1]+"_A", line[0:4], current_snp]
                             # Add the to the file crack the updated and discarded files
-                            file_crack["./temporary_directory/updated_{}_A".format(subfile[0])].append(
-                                "./temporary_directory/updated_{}_{}:{}_{}_A".format(subfile[0], current_oldID, block[0], block[1]))
+                            file_crack["./temporary_directory/updated_"+subfile[0]+"_A"].append(
+                                "./temporary_directory/updated_"+subfile[0]+"_"+current_oldID+":"+line[0]+"_"+line[1]+"_A")
                             # Create a query B for alignment and annotation.
                             if(dataset != "Variants"):
                                 # Do the same with B
-                                query = "tabix ./temporary_directory/{}_B.gz {}:{}-{} > ./temporary_directory/{}_{}:{}_{}_B".format(subfile[0],
-                                                                                                                                    current_oldID, block[0], block[1], subfile[0], current_oldID, block[0], block[1])
-                                tabix_queries[query] = ["compare", "_B", dataset, subfile[0], current_oldID,
-                                                        "./temporary_directory/{}_{}:{}_{}_B".format(
-                                                            subfile[0], current_oldID, block[0], block[1]),
-                                                        "./temporary_directory/updated_{}_{}:{}_{}_B".format(
-                                                            subfile[0], current_oldID, block[0], block[1]),
-                                                        "./temporary_directory/discarded_{}_{}:{}_{}_B".format(subfile[0], current_oldID, block[0], block[1]), block[0:4], current_snp]
+                                query = "tabix ./temporary_directory/" + \
+                                    subfile[0]+"_B.gz "+current_oldID+":"+line[0]+"-"+line[1] + \
+                                        " > ./temporary_directory/"+subfile[0]+"_" + \
+                                    current_oldID+":"+line[0]+"_"+line[1]+"_B"
+                                tabix_queries[query] = ["compare", "_B", dataset, subfile[0], current_oldID, "./temporary_directory/"+subfile[0]+"_"+current_oldID+":"+line[0]+"_"+line[1]+"_B", "./temporary_directory/updated_" +
+                                                        subfile[0]+"_"+current_oldID+":"+line[0]+"_"+line[1]+"_B", "./temporary_directory/discarded_"+subfile[0]+"_"+current_oldID+":"+line[0]+"_"+line[1]+"_B", line[0:4], current_snp]
                                 # Add the to the file crack the updated and discarded files
-                                file_crack["./temporary_directory/updated_{}_A".format(subfile[0])].append(
-                                    "./temporary_directory/updated_{}_{}:{}_{}_A".format(subfile[0], current_oldID, block[0], block[1]))
+                                file_crack["./temporary_directory/updated_"+subfile[0]+"_B"].append(
+                                    "./temporary_directory/updated_"+subfile[0]+"_"+current_oldID+":"+line[0]+"_"+line[1]+"_B")
                 # The previous end is now equal to the current region end
-                prev_end = str(block[1])
+                prev_end = str(line[1])
 
+        # Close the delta file
+        delta_file.close()
         # If the oldID is not in the OldNew_Dict, it must be absent from the new assembly
         for old_key in OldAssembly_Dict.keys():
             if not(old_key in OldNewID_Dict.keys()):
-                # Add the info to the summary_Dict
+                    # Add the info to the summary_Dict
                 summary_Dict[OldAssembly_Dict[old_key][0]] = [
                     "deleted", str(len("".join(OldAssembly_Dict[old_key][1])))]
         # Run show coords
         Popen("show-coords -c -T -H {}/Filtered.delta > {}/summary.coords".format(alignment_pickle,
                                                                                   alignment_pickle), shell=True).wait()
-
+        # Return all the information in form of a list  [tabix_queries,OldNewID_Dict,alignment_pickle,summary_Dict,file_crack]
         return [tabix_queries, OldNewID_Dict, alignment_pickle, summary_Dict, file_crack]

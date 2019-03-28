@@ -387,7 +387,7 @@ def reconstruct_dataset(size,directory,output_file,mode,seqID="0",region="0",upd
 		#Only append comments if filemode is different than append (no comments if the user reconstruct a region)
 
 		#NEW, reversed the if check, it should add comments if the entire file reconstructed
-		if(output_file.endswith('.bam') or output_file.endswith('.sam')):
+		if(output_file.endswith('.bam') or output_file.endswith('.sam') or filemode != 'a'):
 			for line in comments:
 				reconstruct.write(line)
 		#Open the seqID map

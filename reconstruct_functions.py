@@ -387,7 +387,7 @@ def reconstruct_dataset(size,directory,output_file,mode,seqID="0",region="0",upd
 		#Only append comments if filemode is different than append (no comments if the user reconstruct a region)
 
 		#NEW, reversed the if check, it should add comments if the entire file reconstructed
-		if(filemode == "a"):
+		if(output_file.endswith('.bam') or output_file.endswith('.sam')):
 			for line in comments:
 				reconstruct.write(line)
 		#Open the seqID map
@@ -416,8 +416,10 @@ def reconstruct_dataset(size,directory,output_file,mode,seqID="0",region="0",upd
 def convertSAMtoBAM(filename):
 	# Convert SAM back to BAM and remove the SAM file
 	print("Now converting SAM to BAM")
-	Popen("samtools view -S -b -h -o ../Extracted_Alignment.bam" + " " + filename, shell=True).wait()
-	os.remove("../Extracted_Alignment.sam")
+	output_name = filename.replace('.sam','.bam')
+	Popen("samtools view -S -b -h -o " + output_name + " " + filename, shell=True).wait()
+	print("Conversion done")
+	os.remove(filename)
 
 #Create a obtain_file function to obtain the dataset and line size of a given file
 def obtain_file(target,mode):

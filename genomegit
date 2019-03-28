@@ -10,6 +10,7 @@
 path=$(pwd)
 #Obtain the script location
 source="$( cd "$( dirname "$(readlink ${BASH_SOURCE[0]})" )" && pwd )"
+echo "GenomeGit source at: $source"
 
 #GenomeGit requires python 2.7 or above to function properly. Check if it is installed
 command -v python >/dev/null 2>&1 || { echo "GenomeGit requires python, but no python installation was found in this machine.  Now aborting."; exit 0;}
@@ -357,6 +358,12 @@ elif [ "$1" = "get" ]; then
 			esac
 		done
 		#If the user is interested in a different commit / message than current one
+		#NEW, change users filename request to .sam if its .bam
+		if [[ $filename == *".bam" ]]; then
+	        filename=$(basename $filename)
+	        filename=${filename/.bam/'.sam'}
+	    fi
+
 		if ! [ "$commit" = "0" ]; then
 			#Checkout the desired commit hash
 			git checkout $commit

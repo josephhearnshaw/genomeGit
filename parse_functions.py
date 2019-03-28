@@ -517,8 +517,9 @@ def parse_dataset(dataset,input_path,size,update):
 		# Convert BAM to SAM if the input file is BAM
 		if ('.bam' in input_path):
 			samOutput_path = "{}.sam".format(os.path.splitext(input_path)[0])
-			Popen("samtools view -h -o {} {}".format(samOutput_path, input_path), shell=True).wait()
 			print("Now converting BAM to SAM")
+			Popen("samtools view -h -o {} {}".format(samOutput_path, input_path), shell=True).wait()
+			print("Conversion done")
 			# New path for this file is .sam instead of .bam
 			input_path = samOutput_path
 

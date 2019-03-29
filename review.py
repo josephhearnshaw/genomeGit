@@ -36,7 +36,6 @@ print("\nNow producing a summary review between commits "+commit_A+" and "+commi
       ". Warning: If you have added any data into the repository but did not commit, these changes will be lost.\n")
 message_A = subprocess.check_output("git log --format=%B -n 1 "+commit_A, shell=True)
 message_B = subprocess.check_output("git log --format=%B -n 1 "+commit_B, shell=True)
-print(message_A, message_B)
 # Reconstruct the first version of the assembly
 Popen("git checkout "+str(sys.argv[1])+" 2> /dev/null", shell=True).wait()
 reconstruct_dataset(size=60, directory="./Genome",

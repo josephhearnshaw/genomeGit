@@ -10,7 +10,6 @@
 path=$(pwd)
 #Obtain the script location
 source="$( cd "$( dirname "$(readlink ${BASH_SOURCE[0]})" )" && pwd )"
-echo "GenomeGit source at: $source"
 
 #GenomeGit requires python 2.7 or above to function properly. Check if it is installed
 command -v python >/dev/null 2>&1 || { echo "GenomeGit requires python, but no python installation was found in this machine.  Now aborting."; exit 0;}
@@ -72,16 +71,11 @@ elif [ "$1" = "add" ]; then
 			#Default the threads to 1 and the tlength to 1KB
 			threads=1
 			tlength=1000
-			aligner=2
-			percent_identity=95
-			kmer=16
-			segLength=5000
-			inversions=0
 			#Loop through the arguments
 			for WORD; do
 				case $WORD in
 					#If the current argument is the optional number of threads
-					--t=*|--threads=*)
+					--threads=*)
 						#Determine the number of threads selected
 						threads=${1#*=}
 						#Determine if the threads is a valid input, otherwise default it back to 1
@@ -89,7 +83,7 @@ elif [ "$1" = "add" ]; then
 							echo "Invalid threads selection, defaulting it to 1 thread."
 							threads=1
 						fi
-						#Next arg
+						#Shift the arguments (jump to the next)
 						shift
 						;;
 					#If the current argument is the optional template max lenght
@@ -104,56 +98,6 @@ elif [ "$1" = "add" ]; then
 						#Shift the arguments (jump to the next)
 						shift
 						;;
-						--a=*|--aligner=*)
-							#Determine which aligner was chosen
-							aligner=${1#*=}
-							if ! [[ "$aligner" =~ ^[1-2]+$ ]] || ! [ "$aligner" -ge 1 ]; then
-								echo "Invalid aligner selection, defaulting it to nucmer."
-								aligner=2
-							fi
-							#Shift the arguments (jump to the next)
-							shift
-							;;
-						--pi=*)
-							#Determine which aligner was chosen
-							percent_identity=${1#*=}
-							if ! [[ "$percent_identity" =~ ^[0-9]+$ ]] || ! [ "$percent_identity" -ge 1 ]; then
-								echo "Invalid percent identity value, defaulting it to 95."
-								percent_identity=95
-							fi
-							#Shift the arguments (jump to the next)
-							shift
-							;;
-						--k=*|--kmer=*)
-							#Determine which aligner was chosen
-							kmer=${1#*=}
-							if ! [[ "$kmer" =~ ^[0-9]+$ ]] || ! [ "$kmer" -ge 1 ]; then
-								echo "Invalid k-mer selected, defaulting it to 16."
-								kmer=16
-							fi
-							#Shift the arguments (jump to the next)
-							shift
-							;;
-						--s=*|--segLength=*)
-							#Determine which aligner was chosen
-							segLength=${1#*=}
-							if ! [[ "$segLength" =~ ^[0-9]+$ ]] || ! [ "$segLength" -ge 1 ]; then
-								echo "Invalid segment length selected, defaulting it to 5000."
-								segLength=5000
-							fi
-								#Shift the arguments (jump to the next)
-							shift
-							;;
-						--inv=*|--inversions=*)
-							#Determine which aligner was chosen
-							inversions=${1#*=}
-							if ! [[ "$inversions" =~ ^[0-9]+$ ]] || ! [ "$inversions" -ge 1 ]; then
-								echo "Invalid inversions setting selected, defaulting it to forwards flag."
-								inversions=0
-							fi
-								#Shift the arguments (jump to the next)
-							shift
-							;;
 					#If the current argument is the optional --no-update, avoid the auto update
 					--no-update*)
 						#Inform the user
@@ -182,8 +126,7 @@ elif [ "$1" = "add" ]; then
 								echo ""
 								echo "$class dataset detected. Now parsing $filename into git-compatible objects."
 								#Parse and add the dataset. Arguments: class file threads size tlenght
-								bash $source/parse_file.bash "$class" "$filename" "$threads" "$filesize" "$tlength" "$aligner"\
-								"$percent_identity" "$kmer" "$segLength" "$inversions"
+								bash $source/parse_file.bash "$class" "$filename" "$threads" "$filesize" "$tlength"
 							#if it corresponds with a genome dataset, do not perform auto-update
 							elif [ "$class" = "Genome" ]; then
 								#Save the file size in MB
@@ -264,8 +207,7 @@ elif [ "$1" = "add" ]; then
 								echo ""
 								echo "$class dataset detected. Now parsing $filename into git-compatible objects."
 								#Parse and add the dataset. Arguments: class file threads size tlenght
-								bash $source/parse_file.bash "$class" "$filename" "$threads" "$filesize" "$tlength" "$aligner"\
-								"$percent_identity" "$kmer" "$segLength" "$inversions"
+								bash $source/parse_file.bash "$class" "$filename" "$threads" "$filesize" "$tlength"
 							#Otherwise it was an invalid file
 							else
 								echo "Unrecognised file format: $filename"
@@ -358,12 +300,6 @@ elif [ "$1" = "get" ]; then
 			esac
 		done
 		#If the user is interested in a different commit / message than current one
-		#NEW, change users filename request to .sam if its .bam
-		if [[ $filename == *".bam" ]]; then
-	        filename=$(basename $filename)
-	        filename=${filename/.bam/'.sam'}
-	    fi
-
 		if ! [ "$commit" = "0" ]; then
 			#Checkout the desired commit hash
 			git checkout $commit
@@ -458,16 +394,11 @@ elif [ "$1" = "diff" ]; then
 		threads=1
 		message=0
 		merge=0
-		aligner=2
-		percent_identity=95
-		kmer=16
-		segLength=5000
-		inversions=0
 		#Loop through the arguments
 		for WORD; do
 			case $WORD in
 				#If the current argument is the optional number of threads
-				--t|--threads=*)
+				--threads=*)
 					#Determine the number of threads selected
 					threads=${1#*=}
 					#Determine if the threads is a valid input, otherwise default it back to 1
@@ -490,56 +421,6 @@ elif [ "$1" = "diff" ]; then
 					#Shift arguments
 					shift
 					;;
-				--a=*|--aligner=*)
-					#Determine which aligner was chosen
-					aligner=${1#*=}
-					if ! [[ "$aligner" =~ ^[1-2]+$ ]] || ! [ "$aligner" -ge 1 ]; then
-						echo "Invalid aligner selection, defaulting it to nucmer."
-						aligner=2
-					fi
-					#Shift the arguments (jump to the next)
-					shift
-					;;
-				--pi=*)
-					#Determine which aligner was chosen
-					percent_identity=${1#*=}
-					if ! [[ "$percent_identity" =~ ^[0-9]+$ ]] || ! [ "$percent_identity" -ge 1 ]; then
-						echo "Invalid percent identity value, defaulting it to 95."
-						percent_identity=95
-					fi
-					#Shift the arguments (jump to the next)
-					shift
-					;;
-				--k=*|--kmer=*)
-					#Determine which aligner was chosen
-					kmer=${1#*=}
-					if ! [[ "$kmer" =~ ^[0-9]+$ ]] || ! [ "$kmer" -ge 1 ]; then
-						echo "Invalid k-mer selected, defaulting it to 16."
-						kmer=16
-					fi
-					#Shift the arguments (jump to the next)
-					shift
-					;;
-				--s=*|--segLength=*)
-					#Determine which aligner was chosen
-					segLength=${1#*=}
-					if ! [[ "$segLength" =~ ^[0-9]+$ ]] || ! [ "$segLength" -ge 1 ]; then
-						echo "Invalid segment length selected, defaulting it to 5000."
-						segLength=5000
-					fi
-						#Shift the arguments (jump to the next)
-					shift
-					;;
-				--inv=*|--inversions=*)
-					#Determine which aligner was chosen
-					inversions=${1#*=}
-					if ! [[ "$inversions" =~ ^[0-9]+$ ]] || ! [ "$inversions" -ge 1 ]; then
-						echo "Invalid inversions setting selected, defaulting it to forwards flag."
-						inversions=0
-					fi
-						#Shift the arguments (jump to the next)
-					shift
-					;;
 			esac
 		done
 		#If the user provided a message, determine the commit hash associated to them (in case of multiple ones, the first one will be selected)
@@ -554,8 +435,7 @@ elif [ "$1" = "diff" ]; then
 			commit_B=$2
 		fi
 		#Run the summary. Arguments: commitA commitB threads merge
-		python $source/review.py $commit_A $commit_B $threads $merge "$aligner"\
-		"$percent_identity" "$kmer" "$segLength" "$inversions"
+		python $source/review.py $commit_A $commit_B $threads $merge
 	#Inform the user ther is no .gnmgit repo
 	else
 		echo "No genomegit repository detected. Use genomegit init to initiate one."

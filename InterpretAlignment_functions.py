@@ -422,6 +422,7 @@ def update_sequence(query, processing):
                     # Write out the names as query and reference
                     inversion_file = open("./temporary_directory/inversions.txt", "w")
                     inversion_file.write("{}\t{}\n".format(tabix_queries[query][4], entry[0]))
+                    #print(tabix_queries[query][8], entry[0])
                     # Alter the entry accordingly - +2 as its index starts at 0 on one side and also on the other so +1 x 2 = 2
                     # entry[2] = reverse_comp(entry[2])
                     # update the file
@@ -430,7 +431,6 @@ def update_sequence(query, processing):
                     # check if there was any modifications; if there weren't, just take the displacement factor away
                     if(len(tabix_queries[query][9]) == 0):
                         entry[1] = str(displacement_factor_inversions-entry_index+2)
-                        print(entry[1])
                         updated_file.write("\t".join(entry))
                     else:
                         # eLse we'll update the entry index wit the displacement related to the snps

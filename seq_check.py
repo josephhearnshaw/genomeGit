@@ -41,6 +41,7 @@ def capatalize(var):
     var = var.upper()
     return var
 
+
 def info_switch(switch):
     """
     Always default the switch as False if nothing is chosen
@@ -52,13 +53,14 @@ def info_switch(switch):
             summary bool switch
     """
 
-    if(switch==None):
+    if(switch == None):
         summary = False
-    elif(capatalize(str(switch))=="TRUE"):
+    elif(capatalize(str(switch)) == "TRUE"):
         summary = True
     else:
         summary = False
     return summary
+
 
 def getfileName(file):
     """
@@ -70,9 +72,9 @@ def getfileName(file):
     Returns
         Filename from absolute path
     """
-    #Split by backslash, get the last index
+    # Split by backslash, get the last index
     file = file.rsplit('/', 1)[-1]
-    #Remove )" which is found in Pyfadix files
+    # Remove )" which is found in Pyfadix files
     file = re.sub('[")]', '', file)
     return file
 
@@ -94,40 +96,40 @@ def check_vcf_fasta(vcf_name, fasta_name, out_name, noSummary):
 
     """
     vcf_reader = vcf.Reader(open('{}'.format(vcf_name), 'r'))
-    #Initate the counters
+    # Initate the counters
     correctCounter = errorCount = seqLenCount = 0
     if(noSummary == False):
         print("\nPrinting a summary output only.\n")
     print("\nNow comparing your VCF ({}) and FASTA ({}) file... \n\nWriting out to {}.txt".format(
-            getfileName(vcf_name), getfileName(str(fasta_name)), out_name))
+        getfileName(vcf_name), getfileName(str(fasta_name)), out_name))
 
     original_stdout = sys.stdout
     file_out = open("{}.txt".format(out_name), 'w')
     sys.stdout = file_out
-    #Obtain all records in the VCF file
+    # Obtain all records in the VCF file
     for record in vcf_reader:
-        #Capatlize to ensure that no match doesn't occur due to differences in characters being lower or upper case
+        # Capatlize to ensure that no match doesn't occur due to differences in characters being lower or upper case
         vcf_base = capatalize(record.REF)
-        #Obtain all names from Pyfadix
+        # Obtain all names from Pyfadix
         for chromosomes in fasta_name.keys():
             # N.b. VCF starts at position 1 (N+1) and pyfaidx start at index 0.
             fasta_base = capatalize(
                 fasta_name[record.CHROM][record.POS - 1].seq)
-            #If there are matches at the chromosome then the correct count must increase
+            # If there are matches at the chromosome then the correct count must increase
             if(chromosomes == record.CHROM and vcf_base == fasta_base):
-                if(noSummary==True):
+                if(noSummary == True):
                     print("Base {} (chromosome {}, position {}) is correct".format(
                         vcf_base, record.CHROM, record.POS))
                 correctCounter += 1
-            #If there aren't any matches and the length of the seuqnece is less than 1, it's an error
+            # If there aren't any matches and the length of the seuqnece is less than 1, it's an error
             if(chromosomes == record.CHROM and vcf_base != fasta_base and len(vcf_base) <= 1):
-                if(noSummary==True):
+                if(noSummary == True):
                     print("***Base {} (chromosome {}, position {}) is INCORRECT. Found {} instead.***".format(
                         vcf_base, record.CHROM, record.POS, fasta_base))
                 errorCount += 1
-            #If there aren't any matches and the length of the seuqnece is greater than 1, it's due to sequence length differences
+            # If there aren't any matches and the length of the seuqnece is greater than 1, it's due to sequence length differences
             if(chromosomes == record.CHROM and vcf_base != fasta_base and len(vcf_base) > 1):
-                if(noSummary==True):
+                if(noSummary == True):
                     print("*****Seq {} (chromosome {}, position {}) is too long and will not match. Found base {} in Fasta file.*****".format(
                         vcf_base, record.CHROM, record.POS, fasta_base))
                 seqLenCount += 1
@@ -137,7 +139,7 @@ def check_vcf_fasta(vcf_name, fasta_name, out_name, noSummary):
               correctCounter, errorCount, seqLenCount))
 
     sys.stdout = original_stdout
-    #File writing complete, close stdout.
+    # File writing complete, close stdout.
     file_out.close()
     print("\nAll finished! Your output is in {}.txt".format(out_name))
 
@@ -158,105 +160,114 @@ def check_sam_file(sam_name, fasta_file, out_name, noSummary):
 
     """
 
-    #Open the samfile using PySam
+    # Open the samfile using PySam
     samfile = pysam.AlignmentFile(sam_name, "r")
-    #Initate the counters and sequence identity list
+    # Initate the counters and sequence identity list
     correctCounter = errorCount = 0
     seq_ident_list = []
 
     if(noSummary == False):
         print("\nPrinting a summary output only.\n")
     print("\nNow comparing your SAM ({}) and FASTA ({}) file... \n\nWriting out to {}.txt".format(
-            getfileName(sam_name), getfileName(str(fasta_file)), out_name))
+        getfileName(sam_name), getfileName(str(fasta_file)), out_name))
 
     original_stdout = sys.stdout
     file_out = open("{}.txt".format(out_name), 'w')
     sys.stdout = file_out
-    #N.b pos -> reference start, aend -> reference end -
+    # N.b pos -> reference start, aend -> reference end -
     # - qstart -> query start and qend -> query end
 
-    #Obtain all the chromosome names from the fasta file
+    # Obtain all the chromosome names from the fasta file
     for chromosomes in fasta_file.keys():
-        #Obtain all the names from the sam file
+        # Obtain all the names from the sam file
         for names in samfile.references:
-            #Get every read in the sam file
+            # Get every read in the sam file
             for read in samfile.fetch():
                 samfile_seq = capatalize(str(read.seq))
-                #Sequence matches
+                # Sequence matches
                 if(chromosomes == names):
-                    #Perform as default, or if chosen, otherwise just print the summary output
+                    # Perform as default, or if chosen, otherwise just print the summary output
                     if(noSummary == True):
                         try:
-                            #Capatlize to ensure that no match doesn't occur due to differences in characters being lower or upper case
-                            fasta_seq = capatalize(str(fasta_name[chromosomes][read.pos:read.aend].seq))
-                            #Split the sequences into characters
+                            # Capatlize to ensure that no match doesn't occur due to differences in characters being lower or upper case
+                            fasta_seq = capatalize(
+                                str(fasta_name[chromosomes][read.pos:read.aend].seq))
+                            # Split the sequences into characters
                             split_fasta = list(fasta_seq)
                             split_sam = list(samfile_seq)
                             if(samfile_seq == fasta_seq):
-                                #Seq ID will always be 100% if sequences match
+                                # Seq ID will always be 100% if sequences match
                                 print("Correct seq for, {} , at start:, {}, end:, {}, with seq identity of, 100%".format(
                                     chromosomes, read.pos, read.aend))
                                 correctCounter += 1
-                            #Check if reversed sequences are the same
-                            elif(read.is_reverse==True):
+                            # Check if reversed sequences are the same
+                            elif(read.is_reverse == True):
                                 rev_fasta_seq = fasta_seq[::-1]
                                 if(samfile_seq == rev_fasta_seq):
                                     print("***REVERSED: seq for {} at start: {} end: {}***".format(
                                         chromosomes, read.pos, read.aend))
-                        #Position errors -  check seq identity below:
+                        # Position errors -  check seq identity below:
                         except ValueError:
-                            different_bases = [x for x, y in zip(split_sam, split_fasta) if x != y]
-                            #Check reversed sequences
-                            if(read.is_reverse==True):
+                            different_bases = [x for x, y in zip(
+                                split_sam, split_fasta) if x != y]
+                            # Check reversed sequences
+                            if(read.is_reverse == True):
                                 rev_fasta_seq = list(fasta_seq[::-1])
-                                different_bases = [x for x, y in zip(split_sam, rev_fasta_seq) if x != y]
-                                seq_identity = (float(len(different_bases))/float(len(samfile_seq))) * 100
+                                different_bases = [x for x, y in zip(
+                                    split_sam, rev_fasta_seq) if x != y]
+                                seq_identity = (
+                                    float(len(different_bases)) / float(len(samfile_seq))) * 100
                                 seq_ident_list.append(seq_identity)
                                 print("***Incorrect REVERSED seq for, {}, at start:, {}, end:, {}, with seq identity of, {:.2f}%***".format(
                                     chromosomes, read.pos, read.aend, seq_identity))
                                 errorCount += 1
                             else:
-                            #Obtain the differences between the fasta and sam sequences
-                            #Obtain the sequence identity
-                                seq_identity = (float(len(different_bases))/float(len(samfile_seq))) * 100
+                                # Obtain the differences between the fasta and sam sequences
+                                # Obtain the sequence identity
+                                seq_identity = (
+                                    float(len(different_bases)) / float(len(samfile_seq))) * 100
                                 seq_ident_list.append(seq_identity)
                                 print("***Incorrect seq for, {}, at start: {}, end: {}, with seq identity of, {:.2f}%***".format(
                                     chromosomes, read.pos, read.aend, seq_identity))
                                 errorCount += 1
-                    #Else print the summary only
+                    # Else print the summary only
                     else:
                         try:
-                            fasta_seq = capatalize(str(fasta_name[chromosomes][read.pos:read.aend].seq))
+                            fasta_seq = capatalize(
+                                str(fasta_name[chromosomes][read.pos:read.aend].seq))
                             split_fasta = list(fasta_seq)
                             split_sam = list(samfile_seq)
                             if(samfile_seq == fasta_seq):
                                 correctCounter += 1
-                        #Position errors -  check seq identity below:
+                        # Position errors -  check seq identity below:
                         except ValueError:
-                            different_bases = [x for x, y in zip(split_sam, split_fasta) if x != y]
-                            if(read.is_reverse==True):
+                            different_bases = [x for x, y in zip(
+                                split_sam, split_fasta) if x != y]
+                            if(read.is_reverse == True):
                                 rev_fasta_seq = list(fasta_seq[::-1])
-                                different_bases = [x for x, y in zip(split_sam, rev_fasta_seq) if x != y]
-                                seq_identity = (float(len(different_bases))/float(len(samfile_seq))) * 100
+                                different_bases = [x for x, y in zip(
+                                    split_sam, rev_fasta_seq) if x != y]
+                                seq_identity = (
+                                    float(len(different_bases)) / float(len(samfile_seq))) * 100
                                 seq_ident_list.append(seq_identity)
                                 errorCount += 1
                             else:
-                            #Obtain the differences between the fasta and sam sequences
-                            #Obtain the sequence identity
-                                seq_identity = (float(len(different_bases))/float(len(samfile_seq))) * 100
+                                # Obtain the differences between the fasta and sam sequences
+                                # Obtain the sequence identity
+                                seq_identity = (
+                                    float(len(different_bases)) / float(len(samfile_seq))) * 100
                                 seq_ident_list.append(seq_identity)
                                 errorCount += 1
 
     samfile.close()
-    #Obtain the average identity for all incorrect reads and format to 2dp
+    # Obtain the average identity for all incorrect reads and format to 2dp
     identity_avg = np.array(seq_ident_list).mean()
     print("\n***** Number of correct reads is {}*****\n*****Number of incorrect reads is {} with average sequence identity of {:.2f}%*****".format(
         correctCounter, errorCount, identity_avg))
-    #File writing complete, close stdout.
+    # File writing complete, close stdout.
     sys.stdout = original_stdout
     file_out.close()
     print("\nAll finished! Your output is in {}.txt".format(out_name))
-
 
 
 ######################################################################################################################################################
@@ -276,13 +287,13 @@ parser.add_argument(
 parser.add_argument(
     '-s', '--SAM', help="Directory of your SAM file.", required=False)
 parser.add_argument(
-    '-nosum', '--SUM', help="Use this flag to only show the summary information (-sum=True).", required=False)
+    '-nosum', '--SUM', help="Use this flag to show all reads alongside the summary information (-nosum=True).", required=False)
 
-#Obtain arguments
+# Obtain arguments
 args = vars(parser.parse_args())
-#Obtain output name for output file
+# Obtain output name for output file
 out_name = args['output']
-#Default summary switch is True, so always print everything, unless stated otherwise
+# Default summary switch is True, so always print everything, unless stated otherwise
 noSummary = info_switch(args['SUM'])
 
 

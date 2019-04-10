@@ -8,7 +8,7 @@ import argparse
 import pysam
 import re
 import numpy as np
-import string
+
 
 
 def file_paths(vcf_sam_name, fasta_name):
@@ -53,7 +53,7 @@ def info_switch(switch):
             summary bool switch
     """
 
-    if(switch == None):
+    if switch is None:
         summary = False
     elif(capatalize(str(switch)) == "TRUE"):
         summary = True
@@ -117,19 +117,19 @@ def check_vcf_fasta(vcf_name, fasta_name, out_name, noSummary):
                 fasta_name[record.CHROM][record.POS - 1].seq)
             # If there are matches at the chromosome then the correct count must increase
             if(chromosomes == record.CHROM and vcf_base == fasta_base):
-                if(noSummary == True):
+                if noSummary:
                     print("Base {} (chromosome {}, position {}) is correct".format(
                         vcf_base, record.CHROM, record.POS))
                 correctCounter += 1
             # If there aren't any matches and the length of the seuqnece is less than 1, it's an error
             if(chromosomes == record.CHROM and vcf_base != fasta_base and len(vcf_base) <= 1):
-                if(noSummary == True):
+                if noSummary:
                     print("***Base {} (chromosome {}, position {}) is INCORRECT. Found {} instead.***".format(
                         vcf_base, record.CHROM, record.POS, fasta_base))
                 errorCount += 1
             # If there aren't any matches and the length of the seuqnece is greater than 1, it's due to sequence length differences
             if(chromosomes == record.CHROM and vcf_base != fasta_base and len(vcf_base) > 1):
-                if(noSummary == True):
+                if noSummary:
                     print("*****Seq {} (chromosome {}, position {}) is too long and will not match. Found base {} in Fasta file.*****".format(
                         vcf_base, record.CHROM, record.POS, fasta_base))
                 seqLenCount += 1
@@ -166,7 +166,7 @@ def check_sam_file(sam_name, fasta_file, out_name, noSummary):
     correctCounter = errorCount = 0
     seq_ident_list = []
 
-    if(noSummary == False):
+    if not noSummary:
         print("\nPrinting a summary output only.\n")
     print("\nNow comparing your SAM ({}) and FASTA ({}) file... \n\nWriting out to {}.txt".format(
         getfileName(sam_name), getfileName(str(fasta_file)), out_name))
@@ -187,7 +187,7 @@ def check_sam_file(sam_name, fasta_file, out_name, noSummary):
                 # Sequence matches
                 if(chromosomes == names):
                     # Perform as default, or if chosen, otherwise just print the summary output
-                    if(noSummary == True):
+                    if noSummary:
                         try:
                             # Capatlize to ensure that no match doesn't occur due to differences in characters being lower or upper case
                             fasta_seq = capatalize(
@@ -201,7 +201,7 @@ def check_sam_file(sam_name, fasta_file, out_name, noSummary):
                                     chromosomes, read.pos, read.aend))
                                 correctCounter += 1
                             # Check if reversed sequences are the same
-                            elif(read.is_reverse == True):
+                            elif read.is_reverse:
                                 rev_fasta_seq = fasta_seq[::-1]
                                 if(samfile_seq == rev_fasta_seq):
                                     print("***REVERSED: seq for {} at start: {} end: {}***".format(
@@ -211,7 +211,7 @@ def check_sam_file(sam_name, fasta_file, out_name, noSummary):
                             different_bases = [x for x, y in zip(
                                 split_sam, split_fasta) if x != y]
                             # Check reversed sequences
-                            if(read.is_reverse == True):
+                            if read.is_reverse:
                                 rev_fasta_seq = list(fasta_seq[::-1])
                                 different_bases = [x for x, y in zip(
                                     split_sam, rev_fasta_seq) if x != y]
@@ -243,7 +243,7 @@ def check_sam_file(sam_name, fasta_file, out_name, noSummary):
                         except ValueError:
                             different_bases = [x for x, y in zip(
                                 split_sam, split_fasta) if x != y]
-                            if(read.is_reverse == True):
+                            if read.is_reverse:
                                 rev_fasta_seq = list(fasta_seq[::-1])
                                 different_bases = [x for x, y in zip(
                                     split_sam, rev_fasta_seq) if x != y]
@@ -297,11 +297,11 @@ out_name = args['output']
 noSummary = info_switch(args['SUM'])
 
 
-if(args['vcf'] != None):
+if args['vcf'] is not None:
     vcf_name, fasta_name = file_paths(args['vcf'], args['FASTA'])
     fasta_name = Fasta(fasta_name)
     check_vcf_fasta(vcf_name, fasta_name, out_name, noSummary)
-elif(args['SAM'] != None):
+elif args['SAM'] is not None:
     sam_name, fasta_name = file_paths(args['SAM'], args['FASTA'])
     fasta_name = Fasta(fasta_name)
     check_sam_file(sam_name, fasta_name, out_name, noSummary)

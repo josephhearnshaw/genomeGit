@@ -1,4 +1,3 @@
-
 #### install PyVCF, pysam, numpy, and argparse with pip ####
 import sys
 import vcf
@@ -8,7 +7,6 @@ import argparse
 import pysam
 import re
 import numpy as np
-
 
 
 def file_paths(vcf_sam_name, fasta_name):
@@ -72,6 +70,7 @@ def getfileName(file):
     Returns
         Filename from absolute path
     """
+
     # Split by backslash, get the last index
     file = file.rsplit('/', 1)[-1]
     # Remove )" which is found in Pyfadix files
@@ -95,10 +94,11 @@ def check_vcf_fasta(vcf_name, fasta_name, out_name, noSummary):
         Output file containing information of sequence matches and the number of correct matches
 
     """
+
     vcf_reader = vcf.Reader(open('{}'.format(vcf_name), 'r'))
     # Initate the counters
     correctCounter = errorCount = seqLenCount = 0
-    if(noSummary == False):
+    if not noSummary:
         print("\nPrinting a summary output only.\n")
     print("\nNow comparing your VCF ({}) and FASTA ({}) file... \n\nWriting out to {}.txt".format(
         getfileName(vcf_name), getfileName(str(fasta_name)), out_name))
@@ -112,7 +112,7 @@ def check_vcf_fasta(vcf_name, fasta_name, out_name, noSummary):
         vcf_base = capatalize(record.REF)
         # Obtain all names from Pyfadix
         for chromosomes in fasta_name.keys():
-            # N.b. VCF starts at position 1 (N+1) and pyfaidx start at index 0.
+            # N.b. VCF starts at position 1 (N+1) and pyfaidx starts at index 0.
             fasta_base = capatalize(
                 fasta_name[record.CHROM][record.POS - 1].seq)
             # If there are matches at the chromosome then the correct count must increase
@@ -197,7 +197,7 @@ def check_sam_file(sam_name, fasta_file, out_name, noSummary):
                             split_sam = list(samfile_seq)
                             if(samfile_seq == fasta_seq):
                                 # Seq ID will always be 100% if sequences match
-                                print("Correct seq for, {} , at start:, {}, end:, {}, with seq identity of, 100%".format(
+                                print("Correct seq for, {} , at start:, {}, end:, {}, with seq identity of, 100.00%".format(
                                     chromosomes, read.pos, read.aend))
                                 correctCounter += 1
                             # Check if reversed sequences are the same
@@ -287,7 +287,7 @@ parser.add_argument(
 parser.add_argument(
     '-s', '--SAM', help="Directory of your SAM file.", required=False)
 parser.add_argument(
-    '-nosum', '--SUM', help="Use this flag to show all reads alongside the summary information (-nosum=True).", required=False)
+    '-nosum', '--SUM', help="Use this flag to show all reads alongside the summary information (-nosum true).", required=False)
 
 # Obtain arguments
 args = vars(parser.parse_args())
@@ -299,10 +299,12 @@ noSummary = info_switch(args['SUM'])
 
 if args['vcf'] is not None:
     vcf_name, fasta_name = file_paths(args['vcf'], args['FASTA'])
+    print("\nIndexing your Fasta file, one moment...\n")
     fasta_name = Fasta(fasta_name)
     check_vcf_fasta(vcf_name, fasta_name, out_name, noSummary)
 elif args['SAM'] is not None:
     sam_name, fasta_name = file_paths(args['SAM'], args['FASTA'])
+    print("\nIndexing your Fasta file, one moment...\n")
     fasta_name = Fasta(fasta_name)
     check_sam_file(sam_name, fasta_name, out_name, noSummary)
 else:

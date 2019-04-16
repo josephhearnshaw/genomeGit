@@ -561,19 +561,22 @@ def parse_dataset(dataset, input_path, size, update):
     elif(dataset == "Alignment"):
         # If this is an update it is required to update the repomap
 
-        # NEW
         # Convert BAM to SAM if the input file is BAM
         if ('.bam' in input_path):
-            samOutput_path = "{}.sam".format(os.path.splitext(input_path)[0])
+            samOutput_path = './' + os.path.basename(input_path)[:-3] + 'sam'
+            print("Converting BAM to SAM.")
             Popen("samtools view -h -o {} {}".format(samOutput_path,
                                                      input_path), shell=True).wait()
+            print("Conversion done.")
             # New path for this file is .sam instead of .bam
             input_path = samOutput_path
 
             # Create a check file to indicate if it was converted(will be used in reconstruct_functions.py)
             check_file = open("./converted.txt", "w")
             check_file.close()
-        # NEW
+
+            # Change the size of the file to SAM's size
+            size = str(os.path.getsize(input_path) / (1024 * 1024))
 
         if(update):
             # Open the repository map file in read mode and append all the lines to a list
@@ -664,6 +667,10 @@ def parse_dataset(dataset, input_path, size, update):
                 mapfile.write("/" + seqID_dict[seqID] + "/" + subfile + "\n")
         # Close the map file
         mapfile.close()
+
+        # Remove the SAM file that is a result of conversion
+        if(os.path.isfile("./converted.txt")):
+            os.remove(input_path)
 
     # RAISE AN ERROR
 

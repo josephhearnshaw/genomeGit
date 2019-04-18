@@ -385,6 +385,12 @@ def process_compare_query(query_obj):
             snp_coord = int(curr_snp[0])
             # loop through the entries, process SNPs and update coordinates and bases (if inversed)
             for entry in query_outfile:
+                # print(query_obj.query)
+                # if inversed:
+                #     print('inversed')
+                # else:
+                #     print('not inversed')
+                # print('old:\t{}'.format(entry))
                 entry = entry.split('\t')
                 entry_coord = int(entry[1])
                 while (curr_snp != 'done' and snp_coord <= entry_coord):
@@ -400,9 +406,15 @@ def process_compare_query(query_obj):
                         curr_snp = 'done'
 
                 if entry[-1] == 'discarded':
+                    # print('discarded:\t{}'.format(entry))
                     continue
                 entry = update_func(entry, newID, displacement_factor)
+                # check if updated coordinate is negative and discard entry in this case
+                if entry[1][0] == '-':
+                    # print('negative:\t{}'.format(entry))
+                    continue
                 # join updated entry and print to file
+                # print('new:\t{}'.format(entry))
                 updated_file.write(entry)
 
         # iterate over the entries returned by the query
@@ -458,10 +470,9 @@ def update_variance_entry(entry, newID, displacement_factor):
 def process_snp(entry, curr_snp, entry_coord, snp_coord, dataset, displacement_factor, inversed=False):
     displacement_change = 0
     if(entry_coord == snp_coord and dataset == "Variants"):
-        # if the variant has been deleted, replace the barcode with None so that it is discarded downstream
+        # if the variant has been deleted, replace the barcode with 'discarded' so that it is discarded downstream
         if curr_snp[2] == '.':
             entry[-1] = 'discarded'
-        # else:
         entry[2] = curr_snp[2]
     if(curr_snp[1] == "."):
         # Add one to the entry index

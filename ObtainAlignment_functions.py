@@ -213,7 +213,7 @@ these keys correspodn to the query and reference names and their associated leng
     prev_query_key, prev_ref_key = query_key, ref_key
     # Read through the input file
     for line in input_file:
-        # Strip the line of whitespace
+        # Strip the line of trailing whitespace
         line = line.rstrip()
         # Add the respective elements in from the file
         query_key, ref_key, block = parse_mashMap_line(line)
@@ -225,7 +225,7 @@ these keys correspodn to the query and reference names and their associated leng
                 Unfiltered_MashDict[query_key][ref_key] = [block]
         else:
             Unfiltered_MashDict[query_key] = {ref_key: [block]}
-        # Reassign the previous keys so it lags by one
+        # Reassign the previous keys
         prev_query_key, prev_ref_key = query_key, ref_key
 
     return Unfiltered_MashDict
@@ -338,7 +338,7 @@ to nucmer for alignment."""
               .format(ref_ID, query_ID, str(datetime.datetime.now())))
         # print('Running nucmer for {} and {} at {}\n'.format(query_ID, ref_ID, str(datetime.datetime.now())))
         tp.apply_async(get_sequences_mashmap, (ref_file_name,
-                                               query_file_name, name_out, threads, score))
+                                               query_file_name, name_out, 1, score))
         # Increase the count by one
         count += 1
     # Close and join the thread pool and delete the temporary directories once done
@@ -529,8 +529,10 @@ def aligner_caller(aligner_switch, threads, nucmer_directory, reference_director
     if aligner_switch == 2:
         # Run nucmer with the resulting multifastas. Use threads.
         print("\n\t\t - Running nucmer {}".format(str(datetime.datetime.now())))
-        Shellcommand_nucmer = ['nucmer', '--mum', '-t', str(threads), reference_directory,
+        Shellcommand_nucmer = ['nucmer', '--mum', '-b', '1', '-c', '1000', '-t', str(threads), reference_directory,
                                query_directory, '-p', nucmer_directory]
+        # Shellcommand_nucmer = ['nucmer', '--mum', '-t', str(threads), reference_directory,
+        #                        query_directory, '-p', nucmer_directory]
         Popen(Shellcommand_nucmer).wait()
         # Filter the delta file
         print("\n\t\t - Filtering resulting alignment to obtain equivalent "

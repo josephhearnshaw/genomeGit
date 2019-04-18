@@ -22,8 +22,7 @@ def count_lines(file_input):
 
 
 def report_repo():
-    # Create a dictionary about the features of the genomic sequences
-    # {seqKey:[seqID,lenght,conitg_count,N_count,[{file:vcf},{file:gff},{file:sam}]]}
+    # Create a dictionary about the features of the genomic sequences {seqKey:[seqID,lenght,conitg_count,N_count,[{file:vcf},{file:gff},{file:sam}]]}
     genome_report = {}
     # Create a dictionary showing the relationship between the seqID and the seqKey  {seqID:seqKey}
     ID_key = {}
@@ -35,11 +34,10 @@ def report_repo():
             # Update the seqKey
             seq_count += 1
             seqKey = "Sequence" + str(seq_count)
-            # Add the line to the dict as a key and start the values
-            # {seqKey:[seqID,lenght,conitg_count,N_count,[{file:vcf},{file:gff},{file:sam}]]}
+            # Add the line to the dict as a key and start the values {seqKey:[seqID,lenght,conitg_count,N_count,[{file:vcf},{file:gff},{file:sam}]]}
             genome_report[seqKey] = [line[1:].rstrip(), "", 0, 0, [{}, {}, {}]]
             # Add it to the ID_key
-            ID_key[line[1:].rstrip()] = seqKey
+            ID_key[(line[1:].rstrip()).split(" ")[0]] = seqKey
     # Close the file
     seqID_file.close()
     # Open the map file
@@ -65,8 +63,7 @@ def report_repo():
                     genome_report[seqKey][2] += 1
     # Close the file
     map_file.close()
-    # Open the repomap and save the dataset subfile into a dictionary
-    # {dataset:[[filename,subfile_dir],[filename,subfile_dir],]}
+    # Open the repomap and save the dataset subfile into a dictionary {dataset:[[filename,subfile_dir],[filename,subfile_dir],]}
     subfiles_dict = {}
     subfiles_dict["Alignment"] = []
     subfiles_dict["Variants"] = []
@@ -94,15 +91,14 @@ def report_repo():
                 for line in map_file:
                     # If the line indicates a file, count its lines and add it to the line count
                     if(line[0] != ">"):
-                        # result=subprocess.check_output("wc -l "+subfile[1]+line.rstrip().split("\t")[0], shell=True).rstrip()
+                        #result=subprocess.check_output("wc -l "+subfile[1]+line.rstrip().split("\t")[0], shell=True).rstrip()
                         line_count += count_lines(subfile[1] +
                                                   line.rstrip().split("\t")[0])
                     # Otherwise it is a new sequence (check that this is not the first sequence)
                     elif(line_count != 0):
                         # Check the seqID is in the genome assembly
                         if(seqID in ID_key.keys()):
-                            # Add the amount of lines to the dicionary of features of the genomic sequences
-                            # {seqKey:[seqID,lenght,conitg_count,N_count,[{file:vcf},{file:gff},{file:sam}]]}
+                            # Add the amount of lines to the dicionary of features of the genomic sequences {seqKey:[seqID,lenght,conitg_count,N_count,[{file:vcf},{file:gff},{file:sam}]]}
                             # Use the ID_key dictionary  {seqID:seqKey}
                             # If the dataset is Alignment
                             if(dataset == "Alignment"):

@@ -119,7 +119,7 @@ elif [ "$1" = "add" ]; then
                --c=*|--mincluster=*)
                  #Determine the value of the c flag used for nucmer
                  c_flag=${1#*=}
-                 if ! [[ "$c_flag" =~ ^[1-2]+$ ]] || ! [ "$c_flag" -ge 1 ]; then
+                 if ! [[ "$c_flag" =~ ^[0-9]+$ ]] || ! [ "$c_flag" -ge 1 ]; then
                     echo "Invalid c value provided, defaulting it to 65."
                     c_flag=2
                  fi
@@ -129,7 +129,7 @@ elif [ "$1" = "add" ]; then
                --b=*|--breaklen=*)
                  #Determine the value of the c flag used for nucmer
                  b_flag=${1#*=}
-                 if ! [[ "$b_flag" =~ ^[1-2]+$ ]] || ! [ "$b_flag" -ge 1 ]; then
+                 if ! [[ "$b_flag" =~ ^[0-9]+$ ]] || ! [ "$b_flag" -ge 1 ]; then
                     echo "Invalid b value provided, defaulting it to 200."
                     b_flag=2
                  fi

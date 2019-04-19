@@ -72,7 +72,7 @@ else:
                                  directory="./.git/info/temporary_directory",
                                  threads=number_threads, ToUpdate=ToUpdate,
                                  alignment_pickle=alignment_pickle, aligner_switch=2,
-                                 percent_identity=95, kmer=15, segLength=5000)
+                                 percent_identity=95, kmer=15, segLength=5000, c_flag=65, b_flag=200)
 
     # Store the pickle [tabix_queries,OldNewID_Dict,alignment_pickle,summary_Dict,file_crack]
     store_variables(variables=variables, alignment_pickle=alignment_pickle)

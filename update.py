@@ -23,9 +23,12 @@ file_size = str(sys.argv[3])
 template_length = int(sys.argv[4])
 aligner_switch = int(sys.argv[5])
 aligner = ""
-percent_identity = int(sys.argv[6])
-kmer = int(sys.argv[7])
-segLength = int(sys.argv[8])
+c_flag = int(sys.argv[6])
+b_flag = int(sys.argv[7])
+percent_identity = int(sys.argv[8])
+kmer = int(sys.argv[9])
+segLength = int(sys.argv[10])
+
 
 
 def aligner_status(ToUpdate):
@@ -40,11 +43,13 @@ def aligner_status(ToUpdate):
             aligner = "MashMap + Nucmer"
             print("\n\n**Aligner chosen is MashMap + Nucmer (GenomeGit 2.1) with the following "
                   "parameters for MashMap:**\n\n\t -percent identity: {}"
-                  "\n\n\t -Kmer: {}\n\n\t -Segment length: {}\n\n"
-                  .format(percent_identity, kmer, segLength))
+                  "\n\n\t -Kmer: {}\n\n\t -Segment length: {}"
+                  "\n\nParameters for Nucmer:\n\n\t -b: {}\n\n\t -c: {}\n\n"
+                  .format(percent_identity, kmer, segLength, b_flag, c_flag))
         else:
             aligner = "Nucmer"
-            print("\n\n**Aligner chosen is Nucmer only (GenomeGit 2.0)**\n\n")
+            print("\n\n**Aligner chosen is Nucmer only (GenomeGit 2.0)\n\n"
+            "Parameters chosen:\n\n-b: {} and -c: {}".format(b_flag, c_flag))
     return aligner
 
 
@@ -161,7 +166,7 @@ def obtain_variables(alignment_pickle):
                                      new_assembly=new_assembly, directory="./temporary_directory",
                                      threads=number_threads, ToUpdate=ToUpdate, alignment_pickle=alignment_pickle,
                                      aligner_switch=aligner_switch, percent_identity=percent_identity,
-                                     kmer=kmer, segLength=segLength)
+                                     kmer=kmer, segLength=segLength, c_flag=c_flag, b_flag=b_flag)
     return variables
 
 ####################################################

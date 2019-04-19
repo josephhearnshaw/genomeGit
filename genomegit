@@ -77,6 +77,8 @@ elif [ "$1" = "add" ]; then
          percent_identity=95
          kmer=16
          segLength=5000
+         c_flag=65
+         b_flag=200
          #Loop through the arguments
          for WORD; do
             case $WORD in
@@ -114,16 +116,26 @@ elif [ "$1" = "add" ]; then
                   #Shift the arguments (jump to the next)
                   shift
                   ;;
-               --pi=*)
-                  #Determine which aligner was chosen
-                  percent_identity=${1#*=}
-                  if ! [[ "$percent_identity" =~ ^[0-9]+$ ]] || ! [ "$percent_identity" -ge 1 ]; then
-                     echo "Invalid percent identity value, defaulting it to 95."
-                     percent_identity=95
-                  fi
-                  #Shift the arguments (jump to the next)
-                  shift
-                  ;;
+               --c=*|--mincluster=*)
+                 #Determine the value of the c flag used for nucmer
+                 c_flag=${1#*=}
+                 if ! [[ "$c_flag" =~ ^[1-2]+$ ]] || ! [ "$c_flag" -ge 1 ]; then
+                    echo "Invalid c value provided, defaulting it to 65."
+                    c_flag=2
+                 fi
+                 #Shift the arguments (jump to the next)
+                 shift
+                 ;;
+               --b=*|--breaklen=*)
+                 #Determine the value of the c flag used for nucmer
+                 b_flag=${1#*=}
+                 if ! [[ "$b_flag" =~ ^[1-2]+$ ]] || ! [ "$b_flag" -ge 1 ]; then
+                    echo "Invalid b value provided, defaulting it to 200."
+                    b_flag=2
+                 fi
+                 #Shift the arguments (jump to the next)
+                 shift
+                 ;;
                --k=*|--kmer=*)
                   #Determine which aligner was chosen
                   kmer=${1#*=}
@@ -145,6 +157,16 @@ elif [ "$1" = "add" ]; then
                   shift
                   ;;
                   #If the current argument is the optional --no-update, avoid the auto update
+                --pi=*)
+                   #Determine which aligner was chosen
+                   percent_identity=${1#*=}
+                   if ! [[ "$percent_identity" =~ ^[0-9]+$ ]] || ! [ "$percent_identity" -ge 1 ]; then
+                      echo "Invalid percent identity value, defaulting it to 95."
+                      percent_identity=95
+                   fi
+                   #Shift the arguments (jump to the next)
+                   shift
+                   ;;
                --no-update*)
                   #Inform the user
                   echo "*ATTENTION: --no-update optional parameter has been provided: no auto-update will be performed upon request of the user."
@@ -173,7 +195,7 @@ elif [ "$1" = "add" ]; then
                         echo "$class dataset detected. Now parsing $filename into git-compatible objects."
                         #Parse and add the dataset. Arguments: class file threads size tlenght
                         bash $source/parse_file.bash "$class" "$filename" "$threads" "$filesize" "$tlength" "$aligner"\
-                           "$percent_identity" "$kmer" "$segLength"
+                           "$percent_identity" "$kmer" "$segLength" "$c_flag" "$b_flag"
                         #if it corresponds with a genome dataset, do not perform auto-update
                      elif [ "$class" = "Genome" ]; then
                         #Save the file size in MB
@@ -255,7 +277,7 @@ elif [ "$1" = "add" ]; then
                         echo "$class dataset detected. Now parsing $filename into git-compatible objects."
                         #Parse and add the dataset. Arguments: class file threads size tlenght
                         bash $source/parse_file.bash "$class" "$filename" "$threads" "$filesize" "$tlength" "$aligner"\
-                           "$percent_identity" "$kmer" "$segLength"
+                           "$c_flag" "$b_flag" "$percent_identity" "$kmer" "$segLength"
                         #Otherwise it was an invalid file
                      else
                         echo "Unrecognised file format: $filename"

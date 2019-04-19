@@ -190,7 +190,7 @@ elif [ "$1" = "add" ]; then
                      #Check if the file corresponds with a non-genome dataset and parse it normally
                      if [ "$class" = "Annotation" ] || [ "$class" = "Variants" ] || [ "$class" = "Alignment" ]; then
                         #Save the file size in MB
-                        filesize=$(du -m $filename | cut -f1)
+                        filesize=$(wc -c < $filename | awk '{foo = $1/1024/1042; printf("%.5f", foo)}')
                         echo ""
                         echo "$class dataset detected. Now parsing $filename into git-compatible objects."
                         #Parse and add the dataset. Arguments: class file threads size tlenght
@@ -199,7 +199,7 @@ elif [ "$1" = "add" ]; then
                         #if it corresponds with a genome dataset, do not perform auto-update
                      elif [ "$class" = "Genome" ]; then
                         #Save the file size in MB
-                        filesize=$(du -m $filename | cut -f1)
+                        filesize=$(wc -c < $filename | awk '{foo = $1/1024/1042; printf("%.5f", foo)}')
                         echo ""
                         echo "$class dataset detected. Now parsing $filename into git-compatible objects."
                         #If there is a Genome folder already in the repo this is an update.
@@ -272,7 +272,7 @@ elif [ "$1" = "add" ]; then
                      #Check if the file corresponds with a valid dataset
                      if [ "$class" = "Genome" ] || [ "$class" = "Annotation" ] || [ "$class" = "Variants" ] || [ "$class" = "Alignment" ]; then
                         #Save the file size in MB
-                        filesize=$(du -m $filename | cut -f1)
+                        filesize=$(wc -c < $filename | awk '{foo = $1/1024/1042; printf("%.5f", foo)}')
                         echo ""
                         echo "$class dataset detected. Now parsing $filename into git-compatible objects."
                         #Parse and add the dataset. Arguments: class file threads size tlenght

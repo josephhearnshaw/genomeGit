@@ -19,7 +19,7 @@ import shutil
 # Load arguments: new_assembly, threads size, tlength, which aligner to use, and associated mashmap args
 new_assembly = str(sys.argv[1])
 number_threads = int(sys.argv[2])
-file_size = str(sys.argv[3])
+old_file_size = str(sys.argv[3])
 template_length = int(sys.argv[4])
 aligner_switch = int(sys.argv[5])
 aligner = ""
@@ -29,7 +29,23 @@ percent_identity = int(sys.argv[8])
 kmer = int(sys.argv[9])
 segLength = int(sys.argv[10])
 
+file_size_bytes = os.path.getsize(new_assembly)
 
+
+def format_bytes(size):
+    "Convert Bytes to relative filesize and return size and associated label i.e. GB/TB"
+    # 2**10 = 1024
+    power = 2**10
+    n = 0
+    power_labels = {0 : '', 1: 'K', 2: 'M', 3: 'G', 4: 'T'}
+    while(size > power):
+        size /= power
+        n += 1
+    return str(size), power_labels[n]+'B'
+
+
+file_size, label = format_bytes(file_size_bytes)
+file_size = str(file_size)
 
 def aligner_status(ToUpdate):
     """Informs the user of the aligner selected
@@ -76,7 +92,7 @@ def update_inform_user(ToUpdate):
                     # Alternatively, print the below if >1MB
                     else:
                         print(
-                            "\t\t--{} ({} MB)\n".format(subfile[0], subfile[2]))
+                            "\t\t--{} ({} {})\n".format(subfile[0], subfile[2], label))
             # If there are no files in this dataset, inform the user
             else:
                 print("\t\t--No files detected in this {} dataset.\n".format(dataset))
@@ -84,21 +100,21 @@ def update_inform_user(ToUpdate):
     # Inform the user that the update will start now
     # If the file size of the genome data is 1 Mb perform the following:
     if(ToUpdate["Genome"][0][2] == "1"):
-        if(file_size == "1"):
+        if(float(file_size) == 1):
             print("\n*** NOW STARTING UPDATE OF THE REPOSITORY: {} (<1 MB) ---> {} (<1 MB)***\n"
                   .format(ToUpdate["Genome"][0][0], os.path.basename(new_assembly)))
         else:
-            print("\n*** NOW STARTING UPDATE OF THE REPOSITORY: {} (<1 MB) ---> {} ({} MB)***\n"
-                  .format(ToUpdate["Genome"][0][0], os.path.basename(new_assembly), file_size))
+            print("\n*** NOW STARTING UPDATE OF THE REPOSITORY: {} (<1 MB) ---> {} ({} {})***\n"
+                  .format(ToUpdate["Genome"][0][0], os.path.basename(new_assembly), file_size, label))
     else:
         if(file_size == "1"):
             print("\n*** NOW STARTING UPDATE OF THE REPOSITORY: {} ({} MB) --> {} (<1 MB)***\n"
                   .format(ToUpdate["Genome"][0][0], ToUpdate["Genome"][0][2],
                           os.path.basename(new_assembly)))
         else:
-            print("\n*** NOW STARTING UPDATE OF THE REPOSITORY: {} ({} MB) ---> {} ({} MB)***\n"
+            print("\n*** NOW STARTING UPDATE OF THE REPOSITORY: {} ({} MB) ---> {} ({} {})***\n"
                   .format(ToUpdate["Genome"][0][0], ToUpdate["Genome"][0][2],
-                          os.path.basename(new_assembly), file_size))
+                          os.path.basename(new_assembly), file_size, label))
 
 
 def reconstruct_annotation_variants(ToUpdate):

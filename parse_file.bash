@@ -21,7 +21,7 @@ if [ "$1" = "Genome" ]; then
             rm -r temporary_directory
          fi
          #Call the updating script, inform of which datasets to be updated. Arguments: file threads size tlength.
-         python $source/update.py $2 $3 $4 $5 $6 $7 $8 $9 ${10} ${11}
+         python $source/update.py $2 $3 $4 $5 $6 $7 $8 $9 ${10} ${11} 
          #Delete the temporary directory
          rm -r ./temporary_directory
       fi

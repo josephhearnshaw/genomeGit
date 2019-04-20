@@ -17,7 +17,7 @@ with open(str(sys.argv[1]),"r") as repomap:
 	for line in repomap:
 		#Split the line
 		line=line.split("\t")
-		if(int(line[4].rstrip())==1):
+		if(float(line[4].rstrip())==1):
 			#Save the name of the file on its corresponding dataset. If the size is 1MB, it might be smaller.
 				dataset_dict[line[1]].append(line[0]+" (<1 MB)")
 		else:

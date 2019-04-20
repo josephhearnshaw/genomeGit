@@ -21,13 +21,13 @@ class tabix_query:
     "identical", "reversed" and "compare" queries.
     """
 
-    def __init__(self, query=None, type=None, dataset=None, oldSeqID=None, newSeqID=None, outfile=None,
+    def __init__(self, type=None, dataset=None, oldSeqID=None, newSeqID=None, originalFile = None, outfile=None,
                  updated_file=None, oldSeqLength=None, newSeqLength=None, block=None, SNPs=None):
-        self.query = query
         self.type = type
         self.dataset = dataset
         self.oldSeqID = oldSeqID
         self.newSeqID = newSeqID
+        self.originalFile = originalFile
         self.outfile = outfile
         self.updated_file = updated_file
         self.oldSeqLength = int(
@@ -37,20 +37,21 @@ class tabix_query:
         self.block = block
         self.SNPs = SNPs
 
-    @classmethod
-    def identical(cls, query, dataset, oldSeqID, newSeqID, outfile, updated_file):
-        return cls(query=query, type='identical', dataset=dataset, oldSeqID=oldSeqID, newSeqID=newSeqID,
-                   outfile=outfile, updated_file=updated_file)
 
     @classmethod
-    def reversed(cls, query, dataset, oldSeqID, newSeqID, outfile, updated_file, length):
-        return cls(query=query, type='reversed', dataset=dataset, oldSeqID=oldSeqID, newSeqID=newSeqID, outfile=outfile,
-                   updated_file=updated_file, oldSeqLength=length, newSeqLength=length)
+    def identical(cls, dataset, oldSeqID, newSeqID, outfile, updated_file,length, originalFile):
+        return cls(type='identical', dataset=dataset, oldSeqID=oldSeqID, newSeqID=newSeqID,
+                   outfile=outfile, updated_file=updated_file, oldSeqLength=length, originalFile=originalFile)
 
     @classmethod
-    def compare(cls, query, dataset, oldSeqID, newSeqID, outfile, updated_file, block, SNPs):
-        return cls(query=query, type='compare', dataset=dataset, oldSeqID=oldSeqID, newSeqID=newSeqID,
-                   outfile=outfile, updated_file=updated_file, block=block, SNPs=SNPs)
+    def reversed(cls, dataset, oldSeqID, newSeqID, outfile, updated_file, length, originalFile):
+        return cls(type='reversed', dataset=dataset, oldSeqID=oldSeqID, newSeqID=newSeqID, outfile=outfile,
+                   updated_file=updated_file, oldSeqLength=length, newSeqLength=length, originalFile=originalFile)
+
+    @classmethod
+    def compare(cls, dataset, oldSeqID, newSeqID, outfile, updated_file, block, SNPs, originalFile):
+        return cls(type='compare', dataset=dataset, oldSeqID=oldSeqID, newSeqID=newSeqID,
+                   outfile=outfile, updated_file=updated_file, block=block, SNPs=SNPs, originalFile=originalFile)
 
 
 def complementary_base(base):
@@ -647,33 +648,30 @@ def obtain_alignment(old_assembly, new_assembly, directory, threads, ToUpdate, a
                                 subfile[0], old_ID)
                             updated_A = "./temporary_directory/updated_{}_{}:0_A".format(
                                 subfile[0], old_ID)
-                            # Create the query for subfile A
-                            query = "tabix ./temporary_directory/{}_A.gz {}:0 > {}" \
-                                .format(subfile[0], old_ID, outfile_A)
 
                             # NEW (CLASS) IMPLEMENTATION:
+                            originalFile = "./temporary_directory/{}_A.gz".format(subfile[0])
                             queries.append(tabix_query.identical(
-                                query=query, dataset=dataset, oldSeqID=old_ID, newSeqID=new_ID,
-                                outfile=outfile_A, updated_file=updated_A))
+                                dataset=dataset, oldSeqID=old_ID, newSeqID=new_ID,
+                                originalFile=originalFile, outfile=outfile_A, updated_file=updated_A, length=old_length))
                             # Add the information into the file crack. No need to add a discarded file
                             # since the sequence is identical
                             file_crack["./temporary_directory/updated_{}_A".format(
                                 subfile[0])].append(updated_A)
 
                             # Only Alignment and annotation files need subfile B as well
+                            originalFile = "./temporary_directory/{}_B.gz".format(subfile[0])
                             if(dataset == "Alignment" or dataset == "Annotation"):
                                 # Repeat with B
                                 outfile_B = './temporary_directory/{}_{}:0_B'.format(
                                     subfile[0], old_ID)
                                 updated_B = "./temporary_directory/updated_{}_{}:0_B".format(
                                     subfile[0], old_ID)
-                                query = "tabix ./temporary_directory/{}_B.gz {}:0 > {}" \
-                                    .format(subfile[0], old_ID, outfile_B)
 
                                 # NEW (CLASS) IMPLEMENTATION:
                                 queries.append(tabix_query.identical(
-                                    query=query, dataset=dataset, oldSeqID=old_ID, newSeqID=new_ID,
-                                    outfile=outfile_B, updated_file=updated_B))
+                                    dataset=dataset, oldSeqID=old_ID, newSeqID=new_ID,
+                                    originalFile=originalFile, outfile=outfile_B, updated_file=updated_B, length=old_length))
 
                                 file_crack["./temporary_directory/updated_{}_B".format(
                                     subfile[0])].append(updated_B)
@@ -701,13 +699,12 @@ def obtain_alignment(old_assembly, new_assembly, directory, threads, ToUpdate, a
                             discarded_A = "./temporary_directory/discarded_{}:0_A".format(
                                 subfile[0])
                             seqLength = old_length
-                            query = "tabix ./temporary_directory/{}_A.gz {}:0 > {}" \
-                                .format(subfile[0], old_ID, outfile_A)
 
                             # NEW (CLASS) IMPLEMENTATION:
+                            originalFile = "./temporary_directory/{}_A.gz".format(subfile[0])
                             queries.append(tabix_query.reversed(
-                                query=query, dataset=dataset, oldSeqID=old_ID, newSeqID=new_ID,
-                                outfile=outfile_A, updated_file=updated_A, length=seqLength))
+                                dataset=dataset, oldSeqID=old_ID, newSeqID=new_ID,
+                                originalFile=originalFile, outfile=outfile_A, updated_file=updated_A, length=seqLength))
 
                             # Add the information into the file crack. No need to add a discarded
                             # file since the sequence is identical reversed.
@@ -715,6 +712,7 @@ def obtain_alignment(old_assembly, new_assembly, directory, threads, ToUpdate, a
                                 updated_A)
 
                             # Only Alignment and annotation files need subfile B as well
+                            originalFile = "./temporary_directory/{}_B.gz".format(subfile[0])
                             if(dataset == "Alignment" or dataset == "Annotation"):
                                 # Do the same with B
                                 outfile_B = './temporary_directory/{}_{}:0_B'.format(
@@ -723,13 +721,11 @@ def obtain_alignment(old_assembly, new_assembly, directory, threads, ToUpdate, a
                                     subfile[0], old_ID)
                                 discarded_B = "./temporary_directory/discarded_{}:0_B".format(
                                     subfile[0])
-                                query = "tabix ./temporary_directory/{}_B.gz {}:0 > {}" \
-                                    .format(subfile[0], old_ID, outfile_B)
 
                                 # NEW (CLASS) IMPLEMENTATION:
                                 queries.append(tabix_query.reversed(
-                                    query=query, dataset=dataset, oldSeqID=old_ID, newSeqID=new_ID,
-                                    outfile=outfile_B, updated_file=updated_B, length=seqLength))
+                                    dataset=dataset, oldSeqID=old_ID, newSeqID=new_ID,
+                                    originalFile=originalFile, outfile=outfile_B, updated_file=updated_B, length=seqLength))
 
                                 # Add the information into the file crack. No need to add a discarded file since
                                 # the sequence is identical reversed.
@@ -817,22 +813,20 @@ def obtain_alignment(old_assembly, new_assembly, directory, threads, ToUpdate, a
                                 # Add the query A
                                 paras = (
                                     subfile[0], current_oldID, block[0], block[1])
-                                query_A = './temporary_directory/{}_A.gz {}:{}-{}'.format(
-                                    *paras)
+
                                 outfile_A = './temporary_directory/{}_{}:{}_{}_A'.format(
                                     *paras)
                                 updated_A = "./temporary_directory/updated_{}_{}:{}_{}_A".format(
                                     *paras)
                                 discarded_A = "./temporary_directory/discarded_{}_{}:{}_{}_A".format(
                                     *paras)
-                                query = "tabix {} > {}".format(
-                                    query_A, outfile_A)
 
                                 # NEW (CLASS) IMPLEMENTATION:
+                                originalFile = "./temporary_directory/{}_A.gz".format(subfile[0])
                                 queries.append(tabix_query.compare(
-                                    query=query, dataset=dataset, oldSeqID=old_ID, newSeqID=new_ID,
-                                    outfile=outfile_A, updated_file=updated_A, block=block[0:4],
-                                    SNPs=current_snp))
+                                    dataset=dataset, oldSeqID=old_ID, newSeqID=new_ID,
+                                    originalFile=originalFile, outfile=outfile_A, updated_file=updated_A,
+                                    block=block[0:4], SNPs=current_snp))
 
                                 # Add the to the file crack the updated and discarded files
                                 file_crack["./temporary_directory/updated_{}_A".format(subfile[0])].append(
@@ -841,22 +835,19 @@ def obtain_alignment(old_assembly, new_assembly, directory, threads, ToUpdate, a
                                 # Create a query B for alignment and annotation.
                                 if(dataset != "Variants"):
                                     # Do the same with B
-                                    query_B = './temporary_directory/{}_B.gz {}:{}-{}'.format(
-                                        *paras)
                                     outfile_B = './temporary_directory/{}_{}:{}_{}_B'.format(
                                         *paras)
                                     updated_B = "./temporary_directory/updated_{}_{}:{}_{}_B".format(
                                         *paras)
                                     discarded_B = "./temporary_directory/discarded_{}_{}:{}_{}_B".format(
                                         *paras)
-                                    query = "tabix {} > {}".format(
-                                        query_B, outfile_B)
 
                                     # NEW (CLASS) IMPLEMENTATION:
+                                    originalFile = "./temporary_directory/{}_B.gz".format(subfile[0])
                                     queries.append(tabix_query.compare(
-                                        query=query, dataset=dataset, oldSeqID=old_ID, newSeqID=new_ID,
-                                        outfile=outfile_B, updated_file=updated_B, block=block[0:4],
-                                        SNPs=current_snp))
+                                        dataset=dataset, oldSeqID=old_ID, newSeqID=new_ID,
+                                        originalFile=originalFile, outfile=outfile_B, updated_file=updated_B,
+                                        block=block[0:4], SNPs=current_snp))
 
                                     # Add the to the file crack the updated and discarded files
                                     file_crack["./temporary_directory/updated_{}_B".format(

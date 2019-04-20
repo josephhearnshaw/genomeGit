@@ -11,7 +11,7 @@ from subprocess import Popen
 from parse_functions import parse_dataset
 import multiprocessing
 from ObtainAlignment_functions import complementary_base
-
+import tabix
 
 # Create a weld_files function to join back together files contained in filecrack dictionary {finalfilename:[subfile,]}
 def weld_cracks(file_crack):
@@ -296,8 +296,6 @@ def merge_subfiles(dataset, subfile_name, template_length):
 # Create a funciton to analyse the alignment of a given sequence and append the updated/discarded
 # entries into the global output dictionaries
 def update_sequence(query_obj, query_count, number_of_queries):
-    # Execute the query
-    Popen(query_obj.query, shell=True).wait()
 
     # only change seqIDs if sequence is identical
     if query_obj.type == "identical":
@@ -322,17 +320,24 @@ def process_identical_query(query_obj):
     the entries is defined before the loop to reduce the if-clauses evaluated in every iteration (slight
     performance increase)
     """
+    # Execute the tabix query
+    try:
+        tb = tabix.open(query_obj.originalFile)
+        records = tb.query(query_obj.oldSeqID, 0, query_obj.oldSeqLength)
+    except:
+        records = []
+
     # get frequently used attributes for faster lookup
     newID = query_obj.newSeqID
     # open files
-    with open(query_obj.outfile, 'r') as query_outfile, open(query_obj.updated_file, 'w') as updated_file:
+    with open(query_obj.updated_file, 'w') as updated_file:
         # Loop through tabix output
-        for entry in query_outfile:
+        for entry in records:
             # Split the entry by the tabs
-            entry = entry.split("\t")
             # Modify the oldID with the newID
             entry[0] = newID
             updated_file.write("\t".join(entry))
+            updated_file.write("\n")
 
 
 def process_reversed_query(query_obj):
@@ -341,6 +346,13 @@ def process_reversed_query(query_obj):
     the entries is defined before the loop to reduce the if-clauses evaluated in every iteration (slight
     performance increase)
     """
+    # Execute the tabix query
+    try:
+        tb = tabix.open(query_obj.originalFile)
+        records = tb.query(query_obj.oldSeqID, 0, query_obj.oldSeqLength)
+    except:
+        records = []
+
     # get frequently used attributes for faster lookup
     newID = query_obj.newSeqID
     length = query_obj.newSeqLength
@@ -348,14 +360,14 @@ def process_reversed_query(query_obj):
     update_func = find_update_entry_function(
         inversed=True, dataset=query_obj.dataset)
     # Open the query output file, updated and there is no need for discarded file (identical reverse sequence)
-    with open(query_obj.outfile, 'r') as query_outfile, open(query_obj.updated_file, 'w') as updated_file:
+    with open(query_obj.updated_file, 'w') as updated_file:
         # Loop through the lines of the outfile
-        for entry in query_outfile:
+        for entry in records:
             # Split the entry by the tabs and modify the entries so that they correspond with the reverse index
-            entry = entry.split("\t")
             # update and write the entry
             entry = update_func(entry, newID, length + 1)
             updated_file.write(entry)
+            updated_file.write("\n")
 
 
 def process_compare_query(query_obj):
@@ -365,6 +377,15 @@ def process_compare_query(query_obj):
     performance increase).
     Uses the SNPs list (as generator) to loop through entries and SNPs concomitantly.
     """
+    # Execute the tabix query
+    try:
+        tb = tabix.open(query_obj.originalFile)
+        start = int(query_obj.block[0])
+        end = int(query_obj.block[1])
+        records = tb.query(query_obj.oldSeqID, start, end)
+    except:
+        records = []
+
     # put some attributes into variables for faster lookup (slightly better performance on many calls)
     newID = query_obj.newSeqID
     ref_start, ref_end, qry_start, qry_end = (int(x) for x in query_obj.block)
@@ -375,8 +396,9 @@ def process_compare_query(query_obj):
     displacement_factor = qry_start + ref_start if inversed else qry_start - ref_start
     # determine which update function to use
     update_func = find_update_entry_function(inversed, query_obj.dataset)
+
     # open the files
-    with open(query_obj.outfile, 'r') as query_outfile, open(query_obj.updated_file, 'w') as updated_file:
+    with open(query_obj.updated_file, 'w') as updated_file:
         # if there are SNPs, process them
         if (len(query_obj.SNPs) > 0):
             # make SNPs list iterator from the list so that it can be iterated over with next()
@@ -384,14 +406,7 @@ def process_compare_query(query_obj):
             curr_snp = next(SNPs).split()
             snp_coord = int(curr_snp[0])
             # loop through the entries, process SNPs and update coordinates and bases (if inversed)
-            for entry in query_outfile:
-                # print(query_obj.query)
-                # if inversed:
-                #     print('inversed')
-                # else:
-                #     print('not inversed')
-                # print('old:\t{}'.format(entry))
-                entry = entry.split('\t')
+            for entry in records:
                 entry_coord = int(entry[1])
                 while (curr_snp != 'done' and snp_coord <= entry_coord):
                     entry, displacement_factor = process_snp(entry, curr_snp, entry_coord, snp_coord,
@@ -406,24 +421,22 @@ def process_compare_query(query_obj):
                         curr_snp = 'done'
 
                 if entry[-1] == 'discarded':
-                    # print('discarded:\t{}'.format(entry))
                     continue
                 entry = update_func(entry, newID, displacement_factor)
-                # check if updated coordinate is negative and discard entry in this case
                 if entry[1][0] == '-':
-                    # print('negative:\t{}'.format(entry))
+                    print('negative:\t{}'.format(entry))
                     continue
                 # join updated entry and print to file
-                # print('new:\t{}'.format(entry))
                 updated_file.write(entry)
+                updated_file.write("\n")
 
         # iterate over the entries returned by the query
         else:
-            for entry in query_outfile:
-                entry = entry.split('\t')
+            for entry in records:
                 entry = update_func(entry, newID, displacement_factor)
                 # join updated entry and print to file
                 updated_file.write(entry)
+                updated_file.write("\n")
 
 
 def find_update_entry_function(inversed, dataset):
@@ -470,9 +483,10 @@ def update_variance_entry(entry, newID, displacement_factor):
 def process_snp(entry, curr_snp, entry_coord, snp_coord, dataset, displacement_factor, inversed=False):
     displacement_change = 0
     if(entry_coord == snp_coord and dataset == "Variants"):
-        # if the variant has been deleted, replace the barcode with 'discarded' so that it is discarded downstream
+        # if the variant has been deleted, replace the barcode with None so that it is discarded downstream
         if curr_snp[2] == '.':
             entry[-1] = 'discarded'
+        # else:
         entry[2] = curr_snp[2]
     if(curr_snp[1] == "."):
         # Add one to the entry index
@@ -511,6 +525,14 @@ def interpret_alignment(queries, threads, ToUpdate, tlength, filecrack):
         pool.apply_async(update_sequence, args=(query, i, number_of_queries))
     pool.close()
     pool.join()
+
+    # i = 0
+    # for query in queries:
+    #     if(i == 1503):
+    #         break
+    #     update_sequence(query,i,number_of_queries)
+
+
 
     # When the threads are done, merge the files in the filecrack. Inform the user.
     print("\n\t\t - Now concatenating updated subfiles resulting from multi-threaded mode {} at {}".format(

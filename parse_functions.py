@@ -98,8 +98,8 @@ def parse_scf(seq, folder, map_file, seq_index):
             subseq_count = subseq_count + 1
             index = parse_cntg(seq=current_subsequence, number=subseq_count,
                                map_file=map, folder=current_dir, seq_index=index)
-            map.write("N\t" + str(index) + " " +
-                      str(index + len(gap_list[x]) - 1) + "\n")
+            map.write("N\t" + str(index) + " "
+                      + str(index + len(gap_list[x]) - 1) + "\n")
             index = index + len(gap_list[x])
             current_subsequence = ""
     # Return the updated index
@@ -165,8 +165,8 @@ def parse_nucleotides(seq, number, map_file):
     # If this sequence is a contig, store its content in a new file and write the roadmap
     if(IsContig(current_nucleotides)):
         # Write the info about the current sequence in the map file
-        map.write(">Sequence" + str(i) + "\t" +
-                  str(len(current_nucleotides)) + "\n")
+        map.write(">Sequence" + str(i) + "\t"
+                  + str(len(current_nucleotides)) + "\n")
         # Parse the contig
         parse_cntg(seq=current_nucleotides, number=i,
                    map_file=map, folder=".", seq_index=1)
@@ -175,8 +175,8 @@ def parse_nucleotides(seq, number, map_file):
         # Create a directory and write the map
         current_dir = "./Sequence" + str(i)
         os.mkdir(current_dir)
-        map.write(">Sequence" + str(i) + "\t" +
-                  str(len(current_nucleotides)) + "\n")
+        map.write(">Sequence" + str(i) + "\t"
+                  + str(len(current_nucleotides)) + "\n")
         # Parse the scaffold
         parse_scf(seq=current_nucleotides, folder=current_dir,
                   map_file=map, seq_index=1)
@@ -185,8 +185,8 @@ def parse_nucleotides(seq, number, map_file):
         # Create a directory and write the map
         current_dir = "./Sequence" + str(i)
         os.mkdir(current_dir)
-        map.write(">Sequence" + str(i) + "\t" +
-                  str(len(current_nucleotides)) + "\n")
+        map.write(">Sequence" + str(i) + "\t"
+                  + str(len(current_nucleotides)) + "\n")
         # Store all the subsequences separated by N-10000+ gaps in a list
         pattern = "N" * 10000
         super_subseq_list = re.split(pattern + "+", current_nucleotides)
@@ -277,11 +277,11 @@ def parse_dependent_dict(DependentDict):
         # Loop through the regions stored in the dictionary {seqID:{1M:[line[1:],],2M:[],}}
         for region in DependentDict[key].keys():
             # Write in the map
-            seqID_map.write("/Sequence" + str(seq_count) +
-                            "/Region" + str(region) + "\n")
+            seqID_map.write("/Sequence" + str(seq_count)
+                            + "/Region" + str(region) + "\n")
             # Open a new file for the region
-            output_file = open("./Sequence" + str(seq_count) +
-                               "/Region" + str(region), "w")
+            output_file = open("./Sequence" + str(seq_count)
+                               + "/Region" + str(region), "w")
             # Write the entries of the region into the file
             for line in DependentDict[key][region]:
                 output_file.write(line)
@@ -290,10 +290,22 @@ def parse_dependent_dict(DependentDict):
     # Close seqID map
     seqID_map.close()
 
+def format_bytes(size):
+    # 2**10 = 1024
+    power = 2**10
+    n = 0
+    power_labels = {0 : '', 1: 'K', 2: 'M', 3: 'G', 4: 'T'}
+    while(size > power):
+        size /= power
+        n += 1
+    return str(size), power_labels[n]+'B'
+
 # Create a parse dataset function to parse a given dataset in a file into the repository structure
-
-
 def parse_dataset(dataset, input_path, size, update):
+    file_size = os.path.getsize(input_path)
+    size, label = format_bytes(file_size)
+    size = str(size)
+    
 
     # PARSE A GENOME DATASET
 
@@ -358,7 +370,7 @@ def parse_dataset(dataset, input_path, size, update):
                     if("Genome" == line[1]):
                         line[0] = os.path.basename(input_path)
                         line[3] = line_size
-                        line[4] = size + "\n"
+                        line[4] = "{} {}\n".format(size, label)
                     # Store the line with or without modification
                     repo_list.append("\t".join(line))
             # Close the file
@@ -374,8 +386,8 @@ def parse_dataset(dataset, input_path, size, update):
             # Open the repository map file in append mode
             with open("../RepoMap.txt", "a") as repomap:
                 # Write the information corresponding with the added file
-                repomap.write(os.path.basename(input_path) + "\t" + dataset +
-                              "\t" + "./" + dataset + "\t" + line_size + "\t" + size + "\n")
+                repomap.write(os.path.basename(input_path) + "\t" + dataset
+                              + "\t" + "./" + dataset + "\t" + line_size + "\t" + size + "\n")
             # Close the file
             repomap.close()
 
@@ -405,8 +417,8 @@ def parse_dataset(dataset, input_path, size, update):
                     # Inform the user
                     print(
                         "\n\n\t***INPUT ERROR: Invalid input file. Please make sure to provide a valid GFF file for your Annotation dataset.***")
-                    print("\n\t The problem was raised in line number " +
-                          str(line_number) + " :\n\n\t" + "\t".join(line))
+                    print("\n\t The problem was raised in line number "
+                          + str(line_number) + " :\n\n\t" + "\t".join(line))
                     os.system("rm -r ../$(basename " + input_path + ")")
                     # Close the files and exit
                     comment_file.close()
@@ -447,7 +459,7 @@ def parse_dataset(dataset, input_path, size, update):
                     line = line.split("\t")
                     # If the current file is has the same name, substitute the field of the size of the file with the new one
                     if(os.path.basename(input_path) == line[0]):
-                        line[4] = size + "\n"
+                        line[4] = "{} {}\n".format(size, label)
                     # Store the line with or without modification
                     repo_list.append("\t".join(line))
             # Close the file
@@ -463,8 +475,8 @@ def parse_dataset(dataset, input_path, size, update):
             # Open the repository map file in append mode
             with open("../../RepoMap.txt", "a") as repomap:
                 # Write the information corresponding with the added file
-                repomap.write(os.path.basename(input_path) + "\t" + dataset + "\t" + "./" +
-                              dataset + "/" + os.path.basename(input_path) + "\t1\t" + size + "\n")
+                repomap.write(os.path.basename(input_path) + "\t" + dataset + "\t" + "./"
+                              + dataset + "/" + os.path.basename(input_path) + "\t1\t" + size + "\n")
             # Close the file
             repomap.close()
 
@@ -493,8 +505,8 @@ def parse_dataset(dataset, input_path, size, update):
                     # Inform the user
                     print(
                         "\n\n\t***INPUT ERROR: Invalid input file. Please make sure to provide a valid VCF file for your Variants dataset.***")
-                    print("\n\t The problem was raised in line number " +
-                          str(line_number) + " :\n\n\t" + "\t".join(line))
+                    print("\n\t The problem was raised in line number "
+                          + str(line_number) + " :\n\n\t" + "\t".join(line))
                     os.system("rm -r ../$(basename " + input_path + ")")
                     # Close the files and exit
                     variants_file.close()
@@ -535,7 +547,7 @@ def parse_dataset(dataset, input_path, size, update):
                     line = line.split("\t")
                     # If the current file is has the same name, substitute the field of the size of the file with the new one
                     if(os.path.basename(input_path) == line[0]):
-                        line[4] = size + "\n"
+                        line[4] = "{} {}\n".format(size, label)
                     # Store the line with or without modification
                     repo_list.append("\t".join(line))
             # Close the file
@@ -551,8 +563,8 @@ def parse_dataset(dataset, input_path, size, update):
             # Open the repository map file in append mode
             with open("../../RepoMap.txt", "a") as repomap:
                 # Write the information corresponding with the added file
-                repomap.write(os.path.basename(input_path) + "\t" + dataset + "\t" + "./" +
-                              dataset + "/" + os.path.basename(input_path) + "\t1\t" + size + "\n")
+                repomap.write(os.path.basename(input_path) + "\t" + dataset + "\t" + "./"
+                              + dataset + "/" + os.path.basename(input_path) + "\t1\t" + size + "\n")
             # Close the file
             repomap.close()
 
@@ -588,7 +600,7 @@ def parse_dataset(dataset, input_path, size, update):
                 line = line.split("\t")
                 # If the current file is has the same name, substitute the field of the size of the file with the new one
                 if(os.path.basename(input_path) == line[0]):
-                    line[4] = size + "\n"
+                    line[4] = "{} {}\n".format(size, label)
                 # Store the line with or without modification
                 repo_list.append("\t".join(line))
             # Close the file
@@ -602,8 +614,8 @@ def parse_dataset(dataset, input_path, size, update):
             # Open the repository map file in append mode
             repomap = open("../../RepoMap.txt", "a")
             # Write the information corresponding with the added file
-            repomap.write(os.path.basename(input_path) + "\t" + dataset + "\t" + "./" +
-                          dataset + "/" + os.path.basename(input_path) + "\t1\t" + size + "\n")
+            repomap.write(os.path.basename(input_path) + "\t" + dataset + "\t" + "./"
+                          + dataset + "/" + os.path.basename(input_path) + "\t1\t" + size + "\n")
         # Create a comment file to store the comments at the begining of the file
         comment_file = open("./Comments.txt", "w")
         # Open the sam file
@@ -633,8 +645,8 @@ def parse_dataset(dataset, input_path, size, update):
                     region = (int(line[3]) / 1000000)
                     # Append the line to the file of the corresponding region
                     repomap.close()
-                    repomap = open("./Sequence" + str(seq_count) +
-                                   "/Region" + str(region), "a")
+                    repomap = open("./Sequence" + str(seq_count)
+                                   + "/Region" + str(region), "a")
                     repomap.write("\t".join(line))
                 # If the sequence ID is in the dictionary, no need to create a new directory
                 else:

@@ -13,25 +13,10 @@ import multiprocessing
 from ObtainAlignment_functions import reverse_complement
 import tabix
 
-# Create a weld_files function to join back together files contained in filecrack dictionary {finalfilename:[subfile,]}
-# def weld_cracks(file_crack):
-#     # Loop through the keys of the dictionary
-#     for key in file_crack.keys():
-#         # Create a final file
-#         with open(key, "w") as final_file:
-#             # Loop through the values of the key
-#             for value in file_crack[key]:
-#                 # Open the subfile in read mode and append all its lines to the final file
-#                 with open(value, "r") as crack:
-#                     for line in crack:
-#                         final_file.write(line)
-
 # Create a lock for update_sequence
 lock = multiprocessing.Lock()
 
 # Create a function to eliminate repeated barcodes in sub SAM files (this can mess arround with the merge process)
-
-
 def prepare_barcode(infile, outfile):
     # Initiate the index and open the input file
     old_index = "0"
@@ -326,7 +311,7 @@ def process_identical_query(query_obj):
     the entries is defined before the loop to reduce the if-clauses evaluated in every iteration (slight
     performance increase)
     """
-    # Execute the tabix query, skip query if empty result4
+    # Execute the tabix query, skip query if empty result
     try:
         tb = tabix.open(query_obj.originalFile)
         records = tb.query(query_obj.oldSeqID, 0, query_obj.oldSeqLength)
@@ -585,12 +570,6 @@ def interpret_alignment(queries, threads, ToUpdate, tlength):
     for file in updatedFileList:
         file.close()
 
-    # When the threads are done, merge the files in the filecrack. Inform the user.
-    # print("\n\t\t - Now concatenating updated subfiles resulting from multi-threaded mode {} at {}".format(
-    #     subfile[0], str(datetime.datetime.now())))
-    # sys.stdout.flush()
-
-    # weld_cracks(filecrack)
     # Finally, when the files are created it is required to sort them. Loop through the datasets.
     for dataset in ToUpdate.keys():
         if(dataset != "Genome"):

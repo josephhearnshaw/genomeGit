@@ -217,20 +217,6 @@ reconstruct_annotation_variants(ToUpdate)
 ##############################################
 
 # Obtain the information of the alignment between both assemblies.
-# tabix queries:	tabix ./temporary_directory/filename.ext_AB.gz chr:x-y > ./temporary_directory/filename.ext_chr:x_y_AB
-#
-# {tabix_query:["compare","_A/_B//","Annotation/Variants/Alignment",filename.ext,oldID,query_outfile,sub_updated,sub_discarded,[old_block_start,old_block_stop,new_block_start,new_block_stop,block_modifications],[snps...]]}
-# {tabix_query:["reversed","_A/_B//","Annotation/Variants/Alignment",filename.ext,oldID,query_outfile,sub_updated,sub_discarded,length]}
-# {tabix_query:"omitted"}
-# {tabix_query:"identical"}
-#
-# file_crack {finalfilename:[sub_updated/discarded...]}
-#
-# finalfilename:	updated_filename.ext	/	discarded_filename.ext
-# sub_updated/discarded:	updated_filename.ext_chr:x_y_AB	/	discarded_filename.ext_chr:x_y_AB
-#
-# summary_Dict {oldID:[status,length]}
-
 # Determine the alignment pickle
 alignment_pickle = obtain_alignment_pickle("./temporary_directory/genome_old.fa",
                                            new_assembly)

@@ -19,7 +19,7 @@ import shutil
 # Load arguments: new_assembly, threads size, tlength, which aligner to use, and associated mashmap args
 new_assembly = str(sys.argv[1])
 number_threads = int(sys.argv[2])
-old_file_size = str(sys.argv[3])
+file_size = str(sys.argv[3])
 template_length = int(sys.argv[4])
 aligner_switch = int(sys.argv[5])
 aligner = ""
@@ -37,15 +37,16 @@ def format_bytes(size):
     # 2**10 = 1024
     power = 2**10
     n = 0
-    power_labels = {0 : '', 1: 'K', 2: 'M', 3: 'G', 4: 'T'}
+    power_labels = {0: '', 1: 'K', 2: 'M', 3: 'G', 4: 'T'}
     while(size > power):
         size /= power
         n += 1
-    return str(size), power_labels[n]+'B'
+    return str(size), power_labels[n] + 'B'
 
 
 file_size, label = format_bytes(file_size_bytes)
 file_size = str(file_size)
+
 
 def aligner_status(ToUpdate):
     """Informs the user of the aligner selected
@@ -65,7 +66,7 @@ def aligner_status(ToUpdate):
         else:
             aligner = "Nucmer"
             print("\n\n**Aligner chosen is Nucmer only (GenomeGit 2.0)\n\n"
-            "Parameters chosen:\n\n-b: {} and -c: {}".format(b_flag, c_flag))
+                  "Parameters chosen:\n\n-b: {} and -c: {}".format(b_flag, c_flag))
     return aligner
 
 
@@ -82,7 +83,7 @@ def update_inform_user(ToUpdate):
     for dataset in ToUpdate.keys():
         # If the dataset is not a genome dataset
         if(dataset != "Genome"):
-            print("\t-Files detected in the " + dataset + " dataset\n")
+            print("\t-Files detected in the {} dataset\n".format(dataset))
             # If there are files (len of dataset > 0), print the files out
             if(len(ToUpdate[dataset]) != 0):
                 for subfile in ToUpdate[dataset]:
@@ -170,7 +171,7 @@ def obtain_variables(alignment_pickle):
         # Inform the user
         print("\n\t*PART II. OBTAINING GENOME ALIGNMENT: STORED ALIGNMENT DETECTED, NOW LOADING SAVED DATA.*")
         print("\t" + str(datetime.datetime.now()))
-        # Load the variables stored in the pickle [tabix_queries,alignment_pickle,summary_Dict,file_crack]
+        # Load the variables stored in the pickle [tabix_queries,alignment_pickle,summary_Dict]
         variables = load_variables(alignment_pickle + "/pickle")
     # Otherwise it is necessary to obtain the alignment
     else:
@@ -235,7 +236,7 @@ alignment_pickle = obtain_alignment_pickle("./temporary_directory/genome_old.fa"
                                            new_assembly)
 variables = obtain_variables(alignment_pickle)
 store_variables(variables=variables, alignment_pickle=alignment_pickle)
-queries, alignment_pickle, summary_Dict, file_crack, oldSeqs, newSeqs = variables
+queries, alignment_pickle, summary_Dict, oldSeqs, newSeqs = variables
 
 ###################################################################
 # PART 3. START THE INTERPRETATION OF THE ALIGNMENT INFORMATION #
@@ -246,7 +247,7 @@ print("\n\t*PART III. INTERPRETATION OF THE ALIGNMENT INFORMATION AND CREATION O
 print("\t{}".format(str(datetime.datetime.now())))
 # Interpret the information contained in the delta_dict and obtain the updated files.
 interpret_alignment(queries=queries, threads=number_threads, ToUpdate=ToUpdate,
-                    tlength=template_length, filecrack=file_crack)
+                    tlength=template_length)
 
 # Inform the user the update is completed
 print("\n\t***UPDATE COMPLETED: NOW PARSING THE GENOME DATASET***")

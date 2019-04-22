@@ -711,8 +711,8 @@ def obtain_alignment(old_assembly, new_assembly, directory, threads, ToUpdate, a
                                 # NEW (CLASS) IMPLEMENTATION:
                                 queries.append(tabix_query.identical(
                                     dataset=dataset, oldSeqID=old_ID, newSeqID=new_ID,
-                                    originalFile=originalFile, outfile=outfile_B, updated_file=updated_B, length=old_length,
-                                    dependentFile=dependentFile))
+                                    originalFile=originalFile, outfile=outfile_B, updated_file=updated_B,
+                                    length=old_length, dependentFile=dependentFile))
 
                                 # file_crack["./temporary_directory/updated_{}_B".format(
                                 #     subfile[0])].append(updated_B)
@@ -750,8 +750,8 @@ def obtain_alignment(old_assembly, new_assembly, directory, threads, ToUpdate, a
 
                             queries.append(tabix_query.reversed(
                                 dataset=dataset, oldSeqID=old_ID, newSeqID=new_ID,
-                                originalFile=originalFile, outfile=outfile_A, updated_file=updated_A, length=seqLength,
-                                dependentFile=dependentFile))
+                                originalFile=originalFile, outfile=outfile_A, updated_file=updated_A,
+                                length=seqLength, dependentFile=dependentFile))
 
                             # Add the information into the file crack. No need to add a discarded
                             # file since the sequence is identical reversed.

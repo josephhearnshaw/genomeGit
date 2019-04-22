@@ -56,7 +56,7 @@ if(os.path.isdir(alignment_pickle)):
     # Inform the user
     print("A stored alignment has been found. Now loading data.\n")
     # Load the OldNewID dictionary
-    queries, alignment_pickle, summary_Dict, file_crack, \
+    queries, alignment_pickle, summary_Dict, \
         oldSeqs, newSeqs = \
         load_variables(alignment_pickle + "/pickle")
 
@@ -74,10 +74,10 @@ else:
                                  alignment_pickle=alignment_pickle, aligner_switch=2,
                                  percent_identity=95, kmer=15, segLength=5000, c_flag=65, b_flag=200)
 
-    # Store the pickle [tabix_queries,OldNewID_Dict,alignment_pickle,summary_Dict,file_crack]
+    # Store the pickle [tabix_queries,OldNewID_Dict,alignment_pickle,summary_Dict]
     store_variables(variables=variables, alignment_pickle=alignment_pickle)
     # Load the variables
-    queries, alignment_pickle, summary_Dict, file_crack, oldSeqs, newSeqs = variables
+    queries, alignment_pickle, summary_Dict, oldSeqs, newSeqs = variables
 
 # Parse the coords file {oldID:[contigs]...}
 coords_dict = parse_coords_file(

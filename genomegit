@@ -121,7 +121,7 @@ elif [ "$1" = "add" ]; then
                  c_flag=${1#*=}
                  if ! [[ "$c_flag" =~ ^[0-9]+$ ]] || ! [ "$c_flag" -ge 1 ]; then
                     echo "Invalid c value provided, defaulting it to 65."
-                    c_flag=2
+                    c_flag=65
                  fi
                  #Shift the arguments (jump to the next)
                  shift
@@ -131,7 +131,7 @@ elif [ "$1" = "add" ]; then
                  b_flag=${1#*=}
                  if ! [[ "$b_flag" =~ ^[0-9]+$ ]] || ! [ "$b_flag" -ge 1 ]; then
                     echo "Invalid b value provided, defaulting it to 200."
-                    b_flag=2
+                    b_flag=200
                  fi
                  #Shift the arguments (jump to the next)
                  shift

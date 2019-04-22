@@ -58,6 +58,10 @@ class tabix_query:
 
 
 def complementary_base(base):
+    # heterozygous VCF files my contain various alleles in the form of
+    # seqID     pos      variant_id      ref     alt1,alt2      etc.
+    if base == ',':
+        return ','
     comps = {'A': 'T', 'a': 't',
              'G': 'C', 'g': 'c',
              'C': 'G', 'c': 'g',

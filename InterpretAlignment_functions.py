@@ -14,20 +14,24 @@ from ObtainAlignment_functions import complementary_base
 import tabix
 
 # Create a weld_files function to join back together files contained in filecrack dictionary {finalfilename:[subfile,]}
-def weld_cracks(file_crack):
-    # Loop through the keys of the dictionary
-    for key in file_crack.keys():
-        # Create a final file
-        with open(key, "w") as final_file:
-            # Loop through the values of the key
-            for value in file_crack[key]:
-                # Open the subfile in read mode and append all its lines to the final file
-                with open(value, "r") as crack:
-                    for line in crack:
-                        final_file.write(line)
+# def weld_cracks(file_crack):
+#     # Loop through the keys of the dictionary
+#     for key in file_crack.keys():
+#         # Create a final file
+#         with open(key, "w") as final_file:
+#             # Loop through the values of the key
+#             for value in file_crack[key]:
+#                 # Open the subfile in read mode and append all its lines to the final file
+#                 with open(value, "r") as crack:
+#                     for line in crack:
+#                         final_file.write(line)
 
+# Create a lock for update_sequence
+lock = multiprocessing.Lock()
 
 # Create a function to eliminate repeated barcodes in sub SAM files (this can mess arround with the merge process)
+
+
 def prepare_barcode(infile, outfile):
     # Initiate the index and open the input file
     old_index = "0"
@@ -296,6 +300,8 @@ def merge_subfiles(dataset, subfile_name, template_length):
 # Create a funciton to analyse the alignment of a given sequence and append the updated/discarded
 # entries into the global output dictionaries
 def update_sequence(query_obj, query_count, number_of_queries):
+    # Execute the query
+    # Popen(query_obj.query, shell=True).wait()
 
     # only change seqIDs if sequence is identical
     if query_obj.type == "identical":
@@ -320,24 +326,33 @@ def process_identical_query(query_obj):
     the entries is defined before the loop to reduce the if-clauses evaluated in every iteration (slight
     performance increase)
     """
-    # Execute the tabix query
+    # Execute the tabix query, skip query if empty result
     try:
         tb = tabix.open(query_obj.originalFile)
         records = tb.query(query_obj.oldSeqID, 0, query_obj.oldSeqLength)
     except:
-        records = []
+        return
 
     # get frequently used attributes for faster lookup
     newID = query_obj.newSeqID
+
     # open files
-    with open(query_obj.updated_file, 'w') as updated_file:
-        # Loop through tabix output
-        for entry in records:
-            # Split the entry by the tabs
-            # Modify the oldID with the newID
-            entry[0] = newID
-            updated_file.write("\t".join(entry))
-            updated_file.write("\n")
+    # lock is acquired then released after writing is done
+    try:
+        lock.acquire()
+        with open(query_obj.dependentFile, 'a') as updated_file:
+            # Loop through tabix output
+            for entry in records:
+                # Split the entry by the tabs
+                # Modify the oldID with the newID
+                entry[0] = newID
+                if int(entry[1]) < 0:
+                    # print('negative:\t{}'.format(entry))
+                    continue
+                updated_file.write("\t".join(entry))
+                updated_file.write("\n")
+    finally:
+        lock.release()
 
 
 def process_reversed_query(query_obj):
@@ -346,12 +361,12 @@ def process_reversed_query(query_obj):
     the entries is defined before the loop to reduce the if-clauses evaluated in every iteration (slight
     performance increase)
     """
-    # Execute the tabix query
+    # Execute the tabix query, skip query if empty result
     try:
         tb = tabix.open(query_obj.originalFile)
         records = tb.query(query_obj.oldSeqID, 0, query_obj.oldSeqLength)
     except:
-        records = []
+        return
 
     # get frequently used attributes for faster lookup
     newID = query_obj.newSeqID
@@ -359,15 +374,30 @@ def process_reversed_query(query_obj):
     # determine which update function to use
     update_func = find_update_entry_function(
         inversed=True, dataset=query_obj.dataset)
+
+    entryList = []
     # Open the query output file, updated and there is no need for discarded file (identical reverse sequence)
-    with open(query_obj.updated_file, 'w') as updated_file:
-        # Loop through the lines of the outfile
-        for entry in records:
-            # Split the entry by the tabs and modify the entries so that they correspond with the reverse index
-            # update and write the entry
-            entry = update_func(entry, newID, length + 1)
-            updated_file.write(entry)
-            updated_file.write("\n")
+
+    # Loop through the lines of the outfile
+    for entry in records:
+        # Split the entry by the tabs and modify the entries so that they correspond with the reverse index
+        # update and write the entry
+        entry = update_func(entry, newID, length + 1)
+        if int(entry[1]) < 0:
+            # print('negative:\t{}'.format(entry))
+            continue
+        entryList.append(entry)
+
+    # lock is acquired then released after writing is done
+    try:
+        lock.acquire()
+        # open the files
+        with open(query_obj.dependentFile, 'a') as updated_file:
+            for entry in entryList:
+                updated_file.write(entry)
+                updated_file.write("\n")
+    finally:
+        lock.release()
 
 
 def process_compare_query(query_obj):
@@ -377,14 +407,14 @@ def process_compare_query(query_obj):
     performance increase).
     Uses the SNPs list (as generator) to loop through entries and SNPs concomitantly.
     """
-    # Execute the tabix query
+    # Execute the tabix query, skip query if empty result
     try:
         tb = tabix.open(query_obj.originalFile)
         start = int(query_obj.block[0])
         end = int(query_obj.block[1])
         records = tb.query(query_obj.oldSeqID, start, end)
     except:
-        records = []
+        return
 
     # put some attributes into variables for faster lookup (slightly better performance on many calls)
     newID = query_obj.newSeqID
@@ -397,46 +427,57 @@ def process_compare_query(query_obj):
     # determine which update function to use
     update_func = find_update_entry_function(inversed, query_obj.dataset)
 
-    # open the files
-    with open(query_obj.updated_file, 'w') as updated_file:
-        # if there are SNPs, process them
-        if (len(query_obj.SNPs) > 0):
-            # make SNPs list iterator from the list so that it can be iterated over with next()
-            SNPs = iter(query_obj.SNPs)
-            curr_snp = next(SNPs).split()
-            snp_coord = int(curr_snp[0])
-            # loop through the entries, process SNPs and update coordinates and bases (if inversed)
-            for entry in records:
-                entry_coord = int(entry[1])
-                while (curr_snp != 'done' and snp_coord <= entry_coord):
-                    entry, displacement_factor = process_snp(entry, curr_snp, entry_coord, snp_coord,
-                                                             query_obj.dataset, displacement_factor,
-                                                             inversed)
-                    try:
-                        curr_snp = next(SNPs).split()
-                        snp_coord = int(curr_snp[0])
-                    except StopIteration:
-                        # the iterator is exhausted --> set curr_snp to done so that the
-                        # while loop won't be entered any more.
-                        curr_snp = 'done'
+    entryList = []
+    # if there are SNPs, process them
+    if (query_obj.SNPs):
+        # make SNPs list iterator from the list so that it can be iterated over with next()
+        SNPs = iter(query_obj.SNPs)
+        curr_snp = next(SNPs)
+        snp_coord = int(curr_snp[0])
+        # loop through the entries, process SNPs and update coordinates and bases (if inversed)
+        for entry in records:
+            if int(entry[1]) < 0:
+                # print('negative:\t{}'.format(entry))
+                continue
+            entry_coord = int(entry[1])
+            while (curr_snp != 'done' and snp_coord <= entry_coord):
+                entry, displacement_factor = process_snp(entry, curr_snp, entry_coord, snp_coord,
+                                                         query_obj.dataset, displacement_factor,
+                                                         inversed)
+                try:
+                    curr_snp = next(SNPs)
+                    snp_coord = int(curr_snp[0])
+                except StopIteration:
+                    # the iterator is exhausted --> set curr_snp to done so that the
+                    # while loop won't be entered any more.
+                    curr_snp = 'done'
+            if entry[-1] == 'discarded':
+                continue
+            entry = update_func(entry, newID, displacement_factor)
+            # check if updated coordinate is negative and discard entry in this case
+            if int(entry) < 0:
+                # print('negative:\t{}'.format(entry))
+                continue
+            # join updated entry and print to file
+            entryList.append(entry)
 
-                if entry[-1] == 'discarded':
-                    continue
-                entry = update_func(entry, newID, displacement_factor)
-                if entry[1][0] == '-':
-                    print('negative:\t{}'.format(entry))
-                    continue
-                # join updated entry and print to file
+    # iterate over the entries returned by the query
+    else:
+        for entry in records:
+            entry = update_func(entry, newID, displacement_factor)
+            # join updated entry and print to file
+            entryList.append(entry)
+
+    # lock is acquired then released after writing is done
+    try:
+        lock.acquire()
+        # open the files
+        with open(query_obj.dependentFile, 'a') as updated_file:
+            for entry in entryList:
                 updated_file.write(entry)
                 updated_file.write("\n")
-
-        # iterate over the entries returned by the query
-        else:
-            for entry in records:
-                entry = update_func(entry, newID, displacement_factor)
-                # join updated entry and print to file
-                updated_file.write(entry)
-                updated_file.write("\n")
+    finally:
+        lock.release()
 
 
 def find_update_entry_function(inversed, dataset):
@@ -483,10 +524,9 @@ def update_variance_entry(entry, newID, displacement_factor):
 def process_snp(entry, curr_snp, entry_coord, snp_coord, dataset, displacement_factor, inversed=False):
     displacement_change = 0
     if(entry_coord == snp_coord and dataset == "Variants"):
-        # if the variant has been deleted, replace the barcode with None so that it is discarded downstream
+        # if the variant has been deleted, replace the barcode with 'discarded' so that it is discarded downstream
         if curr_snp[2] == '.':
             entry[-1] = 'discarded'
-        # else:
         entry[2] = curr_snp[2]
     if(curr_snp[1] == "."):
         # Add one to the entry index
@@ -500,7 +540,7 @@ def process_snp(entry, curr_snp, entry_coord, snp_coord, dataset, displacement_f
     return entry, displacement_factor + displacement_change
 
 
-def interpret_alignment(queries, threads, ToUpdate, tlength, filecrack):
+def interpret_alignment(queries, threads, ToUpdate, tlength):
     number_of_queries = len(queries)
     # Add the comments of the original files into the begining of the updated ones.
     # Loop through the datasets and act accordingly.
@@ -520,25 +560,42 @@ def interpret_alignment(queries, threads, ToUpdate, tlength, filecrack):
     print("\n\t\t - Now processing {} tabix queries at {}".format(number_of_queries,
                                                                   str(datetime.datetime.now())))
 
+    # Create _A and _B updated files before processing tabix queries
+    # This is to avoid multiple processes creating files at the same time
+    updatedFileList = []
+    for dataset in ToUpdate.keys():
+        # If the dataset is variants
+        if (dataset == "Variants"):
+            # Loop through the subfiles of the dataset and create a new key
+            # for each subfile with an empty list as a value.
+            for subfile in ToUpdate[dataset]:
+                updatedFileList.append(
+                    open("./temporary_directory/updated_{}_A".format(subfile[0]), 'w'))
+        # Only if the dataset is annotation or variants, do it for B as well
+        elif (dataset != "Genome"):
+            for subfile in ToUpdate[dataset]:
+                updatedFileList.append(
+                    open("./temporary_directory/updated_{}_A".format(subfile[0]), 'w'))
+                updatedFileList.append(
+                    open("./temporary_directory/updated_{}_B".format(subfile[0]), 'w'))
+
+    # Process tabix queries with multi-processing
     pool = multiprocessing.Pool(threads)
     for i, query in enumerate(queries):
         pool.apply_async(update_sequence, args=(query, i, number_of_queries))
     pool.close()
     pool.join()
 
-    # i = 0
-    # for query in queries:
-    #     if(i == 1503):
-    #         break
-    #     update_sequence(query,i,number_of_queries)
-
-
+    # Close all _A and _B files
+    for file in updatedFileList:
+        file.close()
 
     # When the threads are done, merge the files in the filecrack. Inform the user.
-    print("\n\t\t - Now concatenating updated subfiles resulting from multi-threaded mode {} at {}".format(
-        subfile[0], str(datetime.datetime.now())))
-    sys.stdout.flush()
-    weld_cracks(filecrack)
+    # print("\n\t\t - Now concatenating updated subfiles resulting from multi-threaded mode {} at {}".format(
+    #     subfile[0], str(datetime.datetime.now())))
+    # sys.stdout.flush()
+
+    # weld_cracks(filecrack)
     # Finally, when the files are created it is required to sort them. Loop through the datasets.
     for dataset in ToUpdate.keys():
         if(dataset != "Genome"):

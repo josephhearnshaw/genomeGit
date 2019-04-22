@@ -316,7 +316,7 @@ def update_sequence(query_obj, query_count, number_of_queries):
         process_compare_query(query_obj)
 
     if (query_count + 1) % 1000 == 0:
-        print('approx. {} out of {} tabix queries processed'.format(
+        print('\t - Approximately. {} out of {} tabix queries processed'.format(
             query_count + 1, number_of_queries))
 
 

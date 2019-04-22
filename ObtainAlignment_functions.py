@@ -795,9 +795,10 @@ def obtain_alignment(old_assembly, new_assembly, directory, threads, ToUpdate, a
     #########################################################
     # multi FASTA construction from old and new assemblies #
     #########################################################
-    print("\n\t\t -Reconstructing the Genome assemblies, please wait...")
+    print("\n\t\t - Reconstructing the Genome assemblies at {}".format(str(datetime.datetime.now())))
     multiFasta_construct(oldSeqs, reference_directory, old_assembly)
     multiFasta_construct(newSeqs, query_directory, new_assembly)
+    print("\n\t\t - Reconstruction finished at {}".format(str(datetime.datetime.now())))
 
     # the assemblies might hold the exact same sequences yielding empty reconstructions which would cause
     # the aligners to throw and error. Hence, check if the reconstructed files are not empty
@@ -811,11 +812,6 @@ def obtain_alignment(old_assembly, new_assembly, directory, threads, ToUpdate, a
                        query_directory, mashmap_directory, alignment_pickle, directory,
                        delta_directory, percent_identity, kmer, segLength, c_flag, b_flag)
 
-        # Run show-snps with the resulting filtered delta file
-        print("\n\t\t - Identification of SNPs in sequences {}".format(str(datetime.datetime.now())))
-        Popen("show-snps -H -T {} > {}".format(delta_directory,
-                                               snp_directory), shell=True).wait()
-        # Loop through the lines of the filtered delta file
         print("\n\t\t - Alignment finished. Now creating tabix queries {}".format(str(datetime.datetime.now())))
 
         ###############################

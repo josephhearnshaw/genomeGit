@@ -732,10 +732,8 @@ def obtain_alignment(old_assembly, new_assembly, directory, threads, ToUpdate, a
                 if(dataset != "Genome"):
                     # Loop through the files of the dataset
                     for subfile in ToUpdate[dataset]:
-                        # Add the query A
-                        paras = (
-                            subfile[0], old_ID, block[0], block[1])
 
+                        # Add the query A
                         # NEW (CLASS) IMPLEMENTATION:
                         originalFile = "./temporary_directory/{}_A.gz".format(
                             subfile[0])

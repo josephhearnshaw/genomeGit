@@ -1,26 +1,35 @@
-# GenomeGit 2: A distributed version control system for genome assembly data.
+# GenomeGit: A distributed version control system for genome assembly data.
 GenomeGit is a distributed version control system based on the creation of git repositories for the storage and management of genomic data. Currently, the program is able to deal with the following datasets:
 
 * Genome assemblies (FASTA)
 * Variant Calling Files (VCF)
 * Annotation files (GFF/GFF3)
-* Alignment files (SAM)
+* Alignment files (SAM/BAM)
 
-Liftover of VCF, SAM and GFF files upon update of genomic assembly is supported. Currently, it is only compatible with Unix systems.
+Liftover of VCF, SAM/BAM, and GFF files following the update of a genome assembly is supported. Currently, it is only compatible with Unix systems.
+
+# What's new in GenomeGit 3.0?
+GenomeGit 3.0 is now able to make use of BAM files. There is also a new hybrid alignment option avaliable using MashMap2 and Nucmer4. In addition, GenomeGit 3.0 is now faster, more accurate, can handle inversions, and handle both splits and merges within genomic data. 
 
 ## First steps
 ### Prerequisites
-The application requires installation of the following dependencies: 
+GenomeGit 3.0 requires installation of the following dependencies: 
 * [Python v 2.7+](https://www.python.org/)
+* [pip] (https://github.com/pypa/pip)
 * [Git](https://git-scm.com/downloads)
 * [MUMmer 4.0](https://mummer4.github.io/)
+* [MashMap 2.0] (https://github.com/marbl/MashMap)
 * [Tabix](http://www.htslib.org/doc/tabix.html)
 ### Installation
-In order to be able to run the program, the location of the *GenomeGit* directory is required to be in the *$PATH* variable. This can be done in two different ways:
+In order to be able to run the program, the location of the *GenomeGit* directory is required to be in the *$PATH* variable. You can install it by either one of the following two methods:
 #### Temporally append the location of the directory into the *$PATH* variable (not recommended)
-To temporally append *GenomeGit* directory to the *$PATH* variable execute ```PATH=$PATH:directory``` in the shell, where ```directory``` stands for the location of the *GenomeGit* directory. The user may need to make the main script executable using ```chmod u+x <path_to_GenomeGit>/genomegit```. Please note that using this method is only a short-term solution, as it will require the user to perform this operation everytime a terminal is closed and opened.
+Temporally append the *GenomeGit* directory to the *$PATH* variable by executing ```PATH=$PATH:directory```, where ```directory``` repersents the location of the *GenomeGit* directory. The user may need to make the main script executable using ```chmod u+x <path_to_GenomeGit>/genomegit```. 
+
+However, please note that using this method is only a short-term solution; you will need to perform this operation eachtime a terminal is closed and reopened.
 #### Permanently append the location of the directory into the *$PATH* variable (recommended)
-In order to easily append  *GenomeGit* directory to the *$PATH* variable permanenlty, a ```genomegit_install``` executable file has been provided. When this file is executed from the shell, it will add a symlink in the ```/usr/bin/ directory``` pointing at the location of the GenomeGit directory. Additionally, the user may need to make the main script executable using ```chmod u+x /usr/bin/genomegit```. This method constitutes a long-term solution, as the user won't need to repeat this operation everytime a terminal is closed and opened or even if the computer is restarted. To unistall GenomeGit, simply remove the GenomeGit directory from your computer and remove the symlink executing ```sudo rm /usr/bin/genomegit```.
+In order to easily append  *GenomeGit* directory to the *$PATH* variable permanenlty, a ```genomegit_install``` executable file has been provided. Simply execute this file to create the symlink to genomegit in the ```/usr/bin/ directory```. You may need to make genomegit executable via chmod (i.e. ```chmod u+x /usr/bin/genomegit```).
+
+To uninstall genomeGit, remove the genomeGit directory from your PC and then remove the symlink using the following: ```sudo rm /usr/bin/genomegit```.
 
 ## Running GenomeGit
 

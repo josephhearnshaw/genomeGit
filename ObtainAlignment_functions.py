@@ -741,8 +741,8 @@ def obtain_alignment(old_assembly, new_assembly, directory, threads, ToUpdate, a
                             subfile[0])
 
                         queries.append(tabix_query.compare(
-                            dataset=dataset, oldSeqID=old_ID, newSeqID=new_ID, originalFile=originalFile,                            block=block[0:4],
-                            SNPs=SNPs, dependentFile=dependentFile))
+                            dataset=dataset, oldSeqID=old_ID, newSeqID=new_ID, originalFile=originalFile,
+                            block=block[0:4], SNPs=SNPs, dependentFile=dependentFile))
 
                         # Create a query B for alignment and annotation.
                         if(dataset != "Variants"):

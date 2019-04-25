@@ -28,7 +28,7 @@ b_flag = int(sys.argv[7])
 percent_identity = int(sys.argv[8])
 kmer = int(sys.argv[9])
 segLength = int(sys.argv[10])
-
+ms_flag = int(sys.argv[11])
 file_size_bytes = os.path.getsize(new_assembly)
 
 
@@ -56,12 +56,21 @@ def aligner_status(ToUpdate):
         print("No datasets to be updated were detected.\n")
         sys.exit()
     else:
-        if aligner_switch == 1:
+        if aligner_switch == 1 and ms_flag == 1:
             aligner = "MashMap + Nucmer"
             print("\n\n**Aligner chosen is MashMap + Nucmer (GenomeGit 2.1) with the following "
                   "parameters for MashMap:**\n\n\t -percent identity: {}"
                   "\n\n\t -Kmer: {}\n\n\t -Segment length: {}"
                   "\n\nParameters for Nucmer:\n\n\t -b: {}\n\n\t -c: {}\n\n"
+                  "\n\nHandles splits only.\n\n"
+                  .format(percent_identity, kmer, segLength, b_flag, c_flag))
+        elif aligner_switch == 1 and ms_flag == 2:
+            aligner = "MashMap + Nucmer"
+            print("\n\n**Aligner chosen is MashMap + Nucmer (GenomeGit 2.1) with the following "
+                  "parameters for MashMap:**\n\n\t -percent identity: {}"
+                  "\n\n\t -Kmer: {}\n\n\t -Segment length: {}"
+                  "\n\nParameters for Nucmer:\n\n\t -b: {}\n\n\t -c: {}\n\n"
+                  "\n\nHandles merges only.\n\n"
                   .format(percent_identity, kmer, segLength, b_flag, c_flag))
         else:
             aligner = "Nucmer"
@@ -183,7 +192,7 @@ def obtain_variables(alignment_pickle):
                                      new_assembly=new_assembly, directory="./temporary_directory",
                                      threads=number_threads, ToUpdate=ToUpdate, alignment_pickle=alignment_pickle,
                                      aligner_switch=aligner_switch, percent_identity=percent_identity,
-                                     kmer=kmer, segLength=segLength, c_flag=c_flag, b_flag=b_flag)
+                                     kmer=kmer, segLength=segLength, c_flag=c_flag, b_flag=b_flag, ms_flag=ms_flag)
     return variables
 
 ####################################################

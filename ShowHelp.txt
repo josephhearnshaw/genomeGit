@@ -10,7 +10,10 @@ GenomeGit utilizes git and its commands, as well as the following custom command
 			specify between MashMap + Nucmer (--aligner=1/--a=1) or Nucmer only (--aligner=2/--a=2).
 
 			***Additional arguments can be passed	to MashMap, including segment length (--segLength/--s), kmer (--kmer/--k), and
-			percent identity (--pi), so you may optimize your aligner for speed and accuracy.  Nucmer can also use the --b or --breaklen and --c or --clustermin arguments. All other values are left at default.
+			percent identity (--pi), so you may optimize your aligner for speed and accuracy. In addition, you can choose to handle merges
+			by setting the flag --ms to --ms=2.  
+			Nucmer can also use the --b or --breaklen and --c or --clustermin arguments. All other values are left at default.
+
 
 
 	list

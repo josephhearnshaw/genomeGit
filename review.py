@@ -23,6 +23,7 @@ commit_B = str(sys.argv[2])
 number_threads = str(sys.argv[3])
 merge = int(sys.argv[4])
 
+
 # Create a temporary directory
 if(os.path.isdir("./.git/info/temporary_directory")):
     shutil.rmtree("./.git/info/temporary_directory")
@@ -58,7 +59,7 @@ if(os.path.isdir(alignment_pickle)):
     # Load the OldNewID dictionary
     queries, alignment_pickle, summary_Dict, \
         oldSeqs, newSeqs = \
-        load_variables(alignment_pickle + "/pickle")
+        load_variables("{}/pickle".format(alignment_pickle))
 
 # Otherwise it is required to perform the alignment between both assemblies
 else:
@@ -72,7 +73,7 @@ else:
                                  directory="./.git/info/temporary_directory",
                                  threads=number_threads, ToUpdate=ToUpdate,
                                  alignment_pickle=alignment_pickle, aligner_switch=2,
-                                 percent_identity=95, kmer=15, segLength=5000, c_flag=65, b_flag=200)
+                                 percent_identity=95, kmer=15, segLength=5000, c_flag=65, b_flag=200, ms_flag=1)
 
     # Store the pickle [tabix_queries,OldNewID_Dict,alignment_pickle,summary_Dict]
     store_variables(variables=variables, alignment_pickle=alignment_pickle)
@@ -82,10 +83,10 @@ else:
 # Parse the coords file {oldID:[contigs]...}
 coords_dict = parse_coords_file(
     "{}/summary.coords".format(alignment_pickle))
-# Parse the snp file	{oldID:[insertions,deletetions,substitutions]}
-snp_dict = parse_snp_file("{}/Filtered.snp".format(alignment_pickle))
+
 # Parse the delta file {oldID:[length_A,length_B,score]...}
 delta_list = parse_delta_file("{}/Filtered.delta".format(alignment_pickle))
+
 
 # initiate empty containers
 identical_list = []
@@ -118,7 +119,7 @@ for oldID, newID, oldLength, newLength in delta_list:
         split_dict[oldID] = [newID]
 
 # open the output file and write the header
-with open("../Diff_test.txt", "w") as report_file:
+with open("../GenomeGit_report.txt", "w") as report_file:
     report_file.write('DIFF REPORT FOR:')
     report_file.write("\n\t###\n\t#\tVERSION A: {} ({})\n\t###\n".format(
         message_A.rstrip(), commit_A))
@@ -160,21 +161,9 @@ with open("../Diff_test.txt", "w") as report_file:
     # get the block coverage) and write to the output file
     report_file.write('\n\n\tAlignments:\n')
     for oldID, newID, oldLength, newLength in delta_list:
-        if (oldID, newID) in snp_dict.keys():
-            insertions, deletions, substitutions = snp_dict[(oldID, newID)]
-            report_file.write(
-                "\t------\n\t|\n\t| Sequence: {} ({} nt) --> {} ({} nt)\n\t|\n".format(
-                    oldID, oldLength, newID, newLength))
-            report_file.write("\t| SNPs:\n\t|\t-Insertions: {}\n\t|\t-Deletions: {}\n\t|\t-Substitutions: {}\n\t|"
-                              .format(str(insertions), str(deletions), str(substitutions)))
-            report_file.write("\n\t| Contig distribution:\n")
-        # Otherwise complete the table with 0s
-        else:
-            report_file.write(
-                "\t------\n\t|\n\t| Sequence: {} ({} nt) --> {} ({} nt)".format(oldID, oldLength, newID, newLength))
-            report_file.write(
-                "\t| SNPs:\n\t|\n\t|\t-Insertions: 0\n\t|\t-Deletions: 0\n\t|\t-Substitutions: 0\n\t|")
-            report_file.write("\n\t| Contig distribution:\n")
+        report_file.write(
+            "\n\n\t------\n\t|\n\t| Sequence: {} ({} nt) --> {} ({} nt)\n\t|\n".format(
+                oldID, oldLength, newID, newLength))
         # Add information regarding contigs. Initiate variables
         i = 0
         coverage_quer = 0
@@ -192,5 +181,5 @@ with open("../Diff_test.txt", "w") as report_file:
         report_file.write(
             "\t|\n\t| Total coverage:\n\t|\n\t|\t-Version A: {}%\n\t|\t-Version B: {}%\n".format(
                 coverage_ref, coverage_quer))
-        report_file.write("\t|\n\t| ------")
+        report_file.write("\t|\n \t------\n")
     report_file.write(' ------\n\nREPORT END')

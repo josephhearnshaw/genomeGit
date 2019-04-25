@@ -77,8 +77,9 @@ elif [ "$1" = "add" ]; then
          percent_identity=95
          kmer=16
          segLength=5000
-         c_flag=65
-         b_flag=200
+         c_flag=2000
+         b_flag=1
+         merge_or_split_flag=1
          #Loop through the arguments
          for WORD; do
             case $WORD in
@@ -120,20 +121,32 @@ elif [ "$1" = "add" ]; then
                  #Determine the value of the c flag used for nucmer
                  c_flag=${1#*=}
                  if ! [[ "$c_flag" =~ ^[0-9]+$ ]] || ! [ "$c_flag" -ge 1 ]; then
-                    echo "Invalid c value provided, defaulting it to 65."
-                    c_flag=65
+                    echo "Invalid c value provided, defaulting it to 2000."
+                    c_flag=2000
                  fi
                  #Shift the arguments (jump to the next)
                  shift
                  ;;
                --b=*|--breaklen=*)
-                 #Determine the value of the c flag used for nucmer
+                 #Determine the value of the b flag used for nucmer
                  b_flag=${1#*=}
                  if ! [[ "$b_flag" =~ ^[0-9]+$ ]] || ! [ "$b_flag" -ge 1 ]; then
-                    echo "Invalid b value provided, defaulting it to 200."
-                    b_flag=200
+                    echo "Invalid b value provided, defaulting it to 1."
+                    b_flag=1
                  fi
                  #Shift the arguments (jump to the next)
+                 shift
+                 ;;
+                 #If the current argument is the optional number of threads
+              --ms=*)
+                 #Determine the number of threads selected
+                 merge_or_split_flag=${1#*=}
+                 #Determine if the threads is a valid input, otherwise default it back to 1
+                 if ! [[ "$merge_or_split_flag" =~ ^[1-2]+$ ]] || ! [ "$merge_or_split_flag" -ge 1 ]; then
+                    echo "Invalid option selected, defaulting it to splits."
+                    merge_or_split_flag=1
+                 fi
+                 #Next arg
                  shift
                  ;;
                --k=*|--kmer=*)
@@ -172,7 +185,7 @@ elif [ "$1" = "add" ]; then
                   echo "*ATTENTION: --no-update optional parameter has been provided: no auto-update will be performed upon request of the user."
                   #Shift arguments
                   shift
-                  #Loop through the provided files (the argunebt might be a group of files)
+                  #Loop through the provided files (the argument might be a group of files)
                   for filepath in "$@"; do
                      #Check that the input file is valid. First, check if it is a relative path
                      if [ -e ${path}/$filepath ]; then
@@ -195,7 +208,7 @@ elif [ "$1" = "add" ]; then
                         echo "$class dataset detected. Now parsing $filename into git-compatible objects."
                         #Parse and add the dataset. Arguments: class file threads size tlenght
                         bash $source/parse_file.bash "$class" "$filename" "$threads" "$filesize" "$tlength" "$aligner"\
-                           "$percent_identity" "$kmer" "$segLength" "$c_flag" "$b_flag"
+                           "$percent_identity" "$kmer" "$segLength" "$c_flag" "$b_flag" "$merge_or_split_flag"
                         #if it corresponds with a genome dataset, do not perform auto-update
                      elif [ "$class" = "Genome" ]; then
                         #Save the file size in MB
@@ -277,7 +290,7 @@ elif [ "$1" = "add" ]; then
                         echo "$class dataset detected. Now parsing $filename into git-compatible objects."
                         #Parse and add the dataset. Arguments: class file threads size tlenght
                         bash $source/parse_file.bash "$class" "$filename" "$threads" "$filesize" "$tlength" "$aligner"\
-                           "$c_flag" "$b_flag" "$percent_identity" "$kmer" "$segLength"
+                           "$c_flag" "$b_flag" "$percent_identity" "$kmer" "$segLength" "$merge_or_split_flag"
                         #Otherwise it was an invalid file
                      else
                         echo "Unrecognised file format: $filename"

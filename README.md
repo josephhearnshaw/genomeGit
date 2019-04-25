@@ -22,6 +22,13 @@ GenomeGit 3.0 requires installation of the following dependencies:
 * [MUMmer 4.0](https://mummer4.github.io/)
 * [MashMap 2.0](https://github.com/marbl/MashMap)
 * [Tabix](http://www.htslib.org/doc/tabix.html)
+
+It makes use of the following Python modules: 
+ * [pytabix 0.1](https://pypi.org/project/pytabix/)
+ * [pyfaidx 0.5.5.2](https://pypi.org/project/pyfaidx/)
+
+The genomeGit installation will ask if you want to install thsi via pip. This assumes you have Python 2.7+ only. Please install these modules to your Python distro if you use a different Python distro.
+
 ### Installation
 In order to be able to run the program, the location of the *GenomeGit* directory is required to be in the *$PATH* variable. You can install it by either one of the following two methods:
 #### Temporally append the location of the directory into the *$PATH* variable (not recommended)

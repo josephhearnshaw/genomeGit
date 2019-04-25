@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # List of dependecies: Git, Python, MUMmer, tabix
-# If the argument does not corresponds with any of the custom GenomeGit commands, it will simply pass it to Git.
+# If the argument does not corresponds with any of the custom genomeGit commands, it will simply pass it to Git.
 
 
 #	PART I. CHECK THE ENVIRONMENT
@@ -11,17 +11,17 @@ path=$(pwd)
 #Obtain the script location
 source="$( cd "$( dirname "$(readlink ${BASH_SOURCE[0]})" )" && pwd )"
 
-echo "GenomeGit source at: $source"
+echo "genomeGit source at: $source"
 
-#GenomeGit requires python 2.7 or above to function properly. Check if it is installed
-command -v python >/dev/null 2>&1 || { echo "GenomeGit requires python, but no python installation was found in this machine.  Now aborting."; exit 0;}
+#genomeGit requires python 2.7 or above to function properly. Check if it is installed
+command -v python >/dev/null 2>&1 || { echo "genomeGit requires python, but no python installation was found in this machine.  Now aborting."; exit 0;}
 #Do the same with git
-command -v git >/dev/null 2>&1 || { echo "GenomeGit requires git, but no git installation was found in this machine.  Now aborting."; exit 0;}
+command -v git >/dev/null 2>&1 || { echo "genomeGit requires git, but no git installation was found in this machine.  Now aborting."; exit 0;}
 
 #Check if genomegit has been installed. To do this, check that all the necessary files are in the path.
 for filename in "$source/ShowHelp.txt" "$source/parse_file.bash" "$source/review.py" "$source/reconstruct.py" "$source/report.py" "$source/discarded.py"; do
    if ! [ -e $filename ]; then
-      echo "Genomegit can't find $filename, please make sure to install GenomeGit before running it using the provided executable file genomegit_install, and that no files are removed from the GenomeGit source code directory."
+      echo "genomeGit can't find $filename, please make sure to install genomeGit before running it using the provided executable file genomegit_install, and that no files are removed from the genomeGit source code directory."
       exit 0
    fi
 done
@@ -32,7 +32,7 @@ done
 # If there are no arguments ($# - number of passed arguments)
 if [ "$#" = 0 ]; then
    # Welcome message
-   echo "Welcome to GenomeGit! Use 'genomegit help' for usage information."
+   echo "Welcome to genomeGit! Use 'genomegit help' for usage information."
 
    # If the 1st argument is help
 elif [ "$1" = "help" ]; then
@@ -466,8 +466,8 @@ elif [ "$1" = "discarded" ]; then
    #Summary of changes between versions
 elif [ "$1" = "diff" ]; then
    #Check if mummer installation exists in the machine. Abort if not.
-   command -v mummer >/dev/null 2>&1 || { echo "GenomeGit requires MUMmer to produce reviews, but no MUMmer installation was found in this machine.  Now aborting."; exit 0;}
-   command -v tabix >/dev/null 2>&1 || { echo "GenomeGit requires Tabix to produce reviews, but no Tabix installation was found in this machine.  Now aborting."; exit 0;}
+   command -v mummer >/dev/null 2>&1 || { echo "genomeGit requires MUMmer to produce reviews, but no MUMmer installation was found in this machine.  Now aborting."; exit 0;}
+   command -v tabix >/dev/null 2>&1 || { echo "genomeGit requires Tabix to produce reviews, but no Tabix installation was found in this machine.  Now aborting."; exit 0;}
    #Shift arguments
    shift
    #Check if .gnmgit repo exists and get inside if so
@@ -568,7 +568,7 @@ else
       cd .gnmgit
       git $@
    else
-      echo "GenomeGit repository not found. Please create one before running any other commands."
+      echo "genomeGit repository not found. Please create one before running any other commands."
       exit 0
    fi
 

@@ -382,6 +382,11 @@ elif [ "$1" = "get" ]; then
                ;;
          esac
       done
+      #Change .bam to .sam if user wants BAM back (only .sam is stored in repo)
+      if [[ $filename == *".bam" ]]; then
+	        filename=$(basename $filename)
+            filename=${filename/.bam/'.sam'}
+      fi
       #If the user is interested in a different commit / message than current one
       if ! [ "$commit" = "0" ]; then
          #Checkout the desired commit hash

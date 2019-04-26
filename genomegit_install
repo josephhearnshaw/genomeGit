@@ -21,6 +21,7 @@ case "${uname_output}" in
 		fi
 		#Create a symlink in the /usr/bin/ directory pointing at the SCRIPT_PATH
 		sudo ln -s  $SCRIPT_PATH/genomegit /usr/bin/
+		python module_checker.py
 		for ((k = 0; k <= 10 ; k++))
 			do
 					echo -n "[ "
@@ -32,7 +33,6 @@ case "${uname_output}" in
 					sleep 0.02
 			done
 		echo
-		python module_checker.py
 		#Confirm that genomegit is installed properly.
 		if [ -e /usr/bin/genomegit ]; then
 			echo "GenomeGit installation complete!"

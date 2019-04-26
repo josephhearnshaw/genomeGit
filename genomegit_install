@@ -21,6 +21,17 @@ case "${uname_output}" in
 		fi
 		#Create a symlink in the /usr/bin/ directory pointing at the SCRIPT_PATH
 		sudo ln -s  $SCRIPT_PATH/genomegit /usr/bin/
+		for ((k = 0; k <= 10 ; k++))
+			do
+					echo -n "[ "
+					for ((i = 0 ; i <= k; i++)); do echo -n "###"; done
+					for ((j = i ; j <= 10 ; j++)); do echo -n "   "; done
+					v=$((k * 10))
+					echo -n " ] "
+					echo -n "$v %" $'\r'
+					sleep 0.02
+			done
+		echo
 		python module_checker.py
 		#Confirm that genomegit is installed properly.
 		if [ -e /usr/bin/genomegit ]; then

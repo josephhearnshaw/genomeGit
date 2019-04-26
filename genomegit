@@ -127,16 +127,16 @@ elif [ "$1" = "add" ]; then
                  #Shift the arguments (jump to the next)
                  shift
                  ;;
-               --b=*|--breaklen=*)
-                 #Determine the value of the b flag used for nucmer
-                 b_flag=${1#*=}
-                 if ! [[ "$b_flag" =~ ^[0-9]+$ ]] || ! [ "$b_flag" -ge 1 ]; then
-                    echo "Invalid b value provided, defaulting it to 1."
-                    b_flag=1
-                 fi
-                 #Shift the arguments (jump to the next)
-                 shift
-                 ;;
+               # --b=*|--breaklen=*)
+               #   #Determine the value of the b flag used for nucmer
+               #   b_flag=${1#*=}
+               #   if ! [[ "$b_flag" =~ ^[0-9]+$ ]] || ! [ "$b_flag" -ge 1 ]; then
+               #      echo "Invalid b value provided, defaulting it to 1."
+               #      b_flag=1
+               #   fi
+               #   #Shift the arguments (jump to the next)
+               #   shift
+               #   ;;
                  #If the current argument is the optional number of threads
               --ms=*)
                  #Determine the number of threads selected

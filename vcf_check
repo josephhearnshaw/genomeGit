@@ -6,17 +6,20 @@ import sys
 
 def check_variant_list(variant_list, fasta_file, seqID, outfile):
     corr_count, false_count = 0, 0
-    seq = str(Fasta(fasta_file)[seqID])
-    for pos, base in variant_list:
-        start_pos = int(pos) - 1
-        end_pos = start_pos + len(base)
-        fasta_base = seq[int(pos) - 1:end_pos]
-        if base.upper() == fasta_base.upper():
-            corr_count += 1
-        else:
-            false_count += 1
-            outfile.write(
-                f'chr: {seqID}\tpos: {pos}\tvcf_base: {base}\tfasta_base: {fasta_base}\n')
+    try:
+        seq = str(Fasta(fasta_file)[seqID])
+        for pos, base in variant_list:
+            start_pos = int(pos) - 1
+            end_pos = start_pos + len(base)
+            fasta_base = seq[int(pos) - 1:end_pos]
+            if base.upper() == fasta_base.upper():
+                corr_count += 1
+            else:
+                false_count += 1
+                outfile.write(
+                    f'chr: {seqID}\tpos: {pos}\tvcf_base: {base}\tfasta_base: {fasta_base}\n')
+    except KeyError:
+        pass
     return corr_count, false_count
 
 

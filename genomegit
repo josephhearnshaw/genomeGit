@@ -335,6 +335,7 @@ elif [ "$1" = "get" ]; then
       filename=0
       dataset=0
       commit=0
+      bam=0
       #Loop through the arguments
       for WORD; do
          case $WORD in
@@ -373,6 +374,17 @@ elif [ "$1" = "get" ]; then
                #Shift the arguments (jump to the next)
                shift
                ;;
+               #If the current argument is the optional commit
+            --bam=*)
+               #Determine if the user wants conversion to BAM (1 is convert)
+                  bam=${1#*=}
+                  if ! [[ "$bam" =~ ^[0-1]+$ ]] || ! [ "$bam" -ge 0 ]; then
+                     echo "Invalid argument, defaulting to no conversion."
+                     bam=0
+                  fi
+               #Shift the arguments (jump to the next)
+               shift
+               ;;
                #If the current argument is not an optional parameter it must be the file name
             *)
                #Determine the selected file
@@ -392,13 +404,13 @@ elif [ "$1" = "get" ]; then
          #Checkout the desired commit hash
          git checkout $commit
          #Reconstruct. Arguments: filename dataset sequence region
-         python $source/reconstruct.py $filename $dataset $sequence $region
+         python $source/reconstruct.py $filename $dataset $sequence $region $bam
          #Checkout back to the master
          git checkout master
          #Otherwise reconstruct normally
       else
          #Reconstruct. Arguments: filename dataset sequence region
-         python $source/reconstruct.py $filename $dataset $sequence $region
+         python $source/reconstruct.py $filename $dataset $sequence $region $bam
       fi
       #Otherwise the user must create a repo before
    else

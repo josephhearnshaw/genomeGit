@@ -17,12 +17,12 @@ if(str(sys.argv[2]) != "0"):
     # Otherwise it is a valid dataset
     else:
         extract_dataset(dataset=str(sys.argv[2]), seqID=str(
-            sys.argv[3]), region=str(sys.argv[4]))
+            sys.argv[3]), region=str(sys.argv[4]), convertToBam=str(sys.argv[5]))
 # Otherwise the user only wants to reconstruct a file of intererst
 else:
     # Obtain file name
     file_name = str(sys.argv[1])
-    # Obtaind dataset and line size
+    # Obtain dataset and line size
     dataset, directory, line_size, size = obtain_file(
         target=file_name, mode="filename")
     # If the file is not found in the repository, exit the program
@@ -75,7 +75,7 @@ else:
             print(
                 "\nNow reconstructing Alignment dataset contained in file: " + file_name)
             reconstruct_dataset(size=1, directory=directory, output_file="../" + file_name,
-                                mode="Alignment", seqID=str(sys.argv[3]), region=str(sys.argv[4]))
+                                mode="Alignment", seqID=str(sys.argv[3]), region=str(sys.argv[4]), convertToBam=str(sys.argv[5]))
             # Inform the user
             print("\nReconstruction completed.")
 

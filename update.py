@@ -242,7 +242,7 @@ print("\n\t*PART III. INTERPRETATION OF THE ALIGNMENT INFORMATION AND CREATION O
 print("\t{}".format(str(datetime.datetime.now())))
 # Interpret the information contained in the delta_dict and obtain the updated files.
 interpret_alignment(queries=queries, threads=number_threads, ToUpdate=ToUpdate,
-                    tlength=template_length)
+                    tlength=template_length, new_assembly=new_assembly)
 
 # Inform the user the update is completed
 print("\n\t***UPDATE COMPLETED: NOW PARSING THE GENOME DATASET***")

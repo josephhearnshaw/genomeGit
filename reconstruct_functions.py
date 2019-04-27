@@ -11,8 +11,6 @@ import subprocess
 from subprocess import Popen
 
 # Create a function to return the commit hash for a given commit message
-
-
 def MessageToHash(message):
     # Isolate the first commit hash of a given message and return it
     commit_hash = subprocess.check_output(
@@ -20,8 +18,6 @@ def MessageToHash(message):
     return str(commit_hash).rstrip()
 
 # Create a function to create a list with the subfiles included in a region of interest
-
-
 def get_files(Dir, Seq, RegionStart, RegionStop):
     # Create an empty list
     ToReconstruct = []
@@ -67,8 +63,6 @@ def get_files(Dir, Seq, RegionStart, RegionStop):
                 line = IDfile.readline()
 
 # Create a function to determine if a sequence exists in a file
-
-
 def check_ID(Seq, Dir):
     # Open the SeqIDs_Map.txt file
     with open(Dir + "/SeqIDs_Map.txt", "r") as IDfile:
@@ -88,7 +82,7 @@ def check_ID(Seq, Dir):
 
 
 # Create a function to reconstruct files back from their folders
-def reconstruct_dataset(size, directory, output_file, mode, seqID="0", region="0", update=False, filemode="w"):
+def reconstruct_dataset(size, directory, output_file, mode, seqID="0", region="0", update=False, filemode="w", convertToBam="0"):
 
     # GENOME RECONSTRUCTION
 
@@ -345,8 +339,8 @@ def reconstruct_dataset(size, directory, output_file, mode, seqID="0", region="0
                                 if(int(line[3]) < region_stop and int(line[3]) > region_start):
                                     reconstruct.write("\t".join(line))
 
-                        # NEW, check if the converted.txt file is generated from parse_functions.py
-                        if (os.path.isfile(directory + "/converted.txt")):
+                        # Check if user wants to convert to BAM
+                        if (convertToBam == "1"):
                             convertSAMtoBAM(subfile.name)
 
                 # Otherwise it is annotation
@@ -395,8 +389,8 @@ def reconstruct_dataset(size, directory, output_file, mode, seqID="0", region="0
             # Close the reconstruct file
             reconstruct.close()
 
-            # NEW, check if the converted.txt file is generated from parse_functions.py
-            if (os.path.isfile(directory + "/converted.txt")):
+            # Check if user wants to convert to bam
+            if (convertToBam == "1"):
                 convertSAMtoBAM(reconstruct.name)
 
     # REGULAR RECONSTRUCTION
@@ -409,7 +403,7 @@ def reconstruct_dataset(size, directory, output_file, mode, seqID="0", region="0
         comments = open(directory + "/Comments.txt", "r")
         # Only append comments if filemode is different than append (no comments if the user reconstruct a region)
 
-        # NEW, reversed the if check, it should add comments if the entire file reconstructed
+        # Add headers if it's a bam or sam file
         if(output_file.endswith('.bam') or output_file.endswith('.sam') or filemode != 'a'):
             for line in comments:
                 reconstruct.write(line)
@@ -431,13 +425,11 @@ def reconstruct_dataset(size, directory, output_file, mode, seqID="0", region="0
         seqID_map.close()
         comments.close()
 
-        # NEW, check if the converted.txt file is generated from parse_functions.py
-        if (os.path.isfile(directory + "/converted.txt")):
+        # Check if the user wants to convert to BAM
+        if (convertToBam == "1"):
             convertSAMtoBAM(reconstruct.name)
 
-# NEW, convert from SAM to BAM
-
-
+# Convert from SAM to BAM
 def convertSAMtoBAM(filename):
     # Convert SAM back to BAM and remove the SAM file
     print("Now converting SAM to BAM")
@@ -448,8 +440,6 @@ def convertSAMtoBAM(filename):
     os.remove(filename)
 
 # Create a obtain_file function to obtain the dataset and line size of a given file
-
-
 def obtain_file(target, mode):
     # If the provided target is a filename
     if(mode == "filename"):
@@ -484,8 +474,6 @@ def obtain_file(target, mode):
         return file_list
 
 # Create a function to return the extension of a given dataset
-
-
 def get_extension(dataset):
     # Return the extension corresponding with each dataset
     if(dataset == "Genome"):
@@ -498,9 +486,7 @@ def get_extension(dataset):
         return ".sam"
 
 # Create function to extract an entire dataset (all the files contained in that dataset)
-
-
-def extract_dataset(dataset, seqID, region):
+def extract_dataset(dataset, seqID, region, convertToBam):
     # Extract a list of files for the dataset of interest [[filename,dataset,directory,linesize],[...]]
     file_list = obtain_file(target=dataset, mode="dataset")
     # Get the file extension
@@ -525,7 +511,7 @@ def extract_dataset(dataset, seqID, region):
         for subfile in file_list:
             # Reconstruct the subfile
             reconstruct_dataset(size=int(subfile[3]), directory=subfile[2], output_file="../Extracted_" +
-                                dataset + extension, mode=subfile[1], seqID=seqID, region=region, filemode="a")
+                                dataset + extension, mode=subfile[1], seqID=seqID, region=region, filemode="a", convertToBam=convertToBam)
         # Inform the user
         print("Reconstruction completed.")
     # Otherwise the user wants to reconstruct the entire dataset
@@ -543,6 +529,6 @@ def extract_dataset(dataset, seqID, region):
         for subfile in file_list:
             # Reconstruct the subfile
             reconstruct_dataset(size=int(subfile[3]), directory=subfile[2], output_file="../Extracted_" +
-                                dataset + extension, mode=subfile[1], seqID="0", region="0", filemode="a")
+                                dataset + extension, mode=subfile[1], seqID="0", region="0", filemode="a", convertToBam=convertToBam)
         # Inform the user
         print("Reconstruction completed.")

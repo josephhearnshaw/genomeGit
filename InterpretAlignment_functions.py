@@ -519,7 +519,7 @@ def process_snp(entry, curr_snp, entry_coord, snp_coord, dataset, displacement_f
     return entry, displacement_factor + displacement_change
 
 
-def interpret_alignment(queries, threads, ToUpdate, tlength):
+def interpret_alignment(queries, threads, ToUpdate, tlength, new_assembly):
     number_of_queries = len(queries)
     # Add the comments of the original files into the begining of the updated ones.
     # Loop through the datasets and act accordingly.
@@ -530,8 +530,10 @@ def interpret_alignment(queries, threads, ToUpdate, tlength):
             # Loop through the files of the dataset
             for subfile in ToUpdate[dataset]:
                 # Add the comments of the original file into the updated one
-                ShellCommand = Popen(
-                    "cp ./" + subfile[1] + "/Comments.txt ./temporary_directory/" + subfile[0], shell=True).wait()
+                # Ignore alignment, new alignment headers will be generated later
+                if(dataset != "Alignment"):
+                    ShellCommand = Popen(
+                        "cp ./" + subfile[1] + "/Comments.txt ./temporary_directory/" + subfile[0], shell=True).wait()
     # From now on this part can be threaded, one thread analysing one tabix query at a time.
     # The dictionaries must be made global otherwise they will be overwriten.
 
@@ -612,6 +614,17 @@ def interpret_alignment(queries, threads, ToUpdate, tlength):
                 # Merge all the files
                 merge_subfiles(
                     dataset=dataset, subfile_name=subfile[0], template_length=int(tlength))
+
+                # Add new headers to the new alignment file
+                if(dataset == "Alignment"):
+                    ShellCommand = Popen("samtools faidx " + new_assembly, shell=True).wait()
+                    ShellCommand = Popen("samtools view -ht " + new_assembly + ".fai " +
+                                         "./temporary_directory/{}".format(subfile[0]) +
+                                         " > ./temporary_directory/{}".format(subfile[0] + "_commented"), shell=True).wait()
+                    os.rename("./temporary_directory/{}".format(subfile[0] + "_commented"),
+                              "./temporary_directory/{}".format(subfile[0]))
+                    os.remove(new_assembly + ".fai")
+
                 # make the directory
                 git_directory = "./{}/{}".format(dataset, subfile[0])
                 # Parse the updated file into the repository (not necessary to git add, that is

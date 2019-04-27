@@ -77,6 +77,8 @@ To reconstruct any Git-compatible files, such as the extracted VCF data, execute
 
 If a user wishes to reconstruct a Variants datatype, they can execute ```genomegit get --dataset=Variants```. The optional parameters ```--sequence``` and ```--region``` can be used to extract regions of a sequence which are contained within the file of interested. The region must be specified as a range in the form of two integers, seperated by a dash ("-"), e.g. ```--region=1-5000```. If the file of interest belongs to a previous repository version, then ```--commit-hash``` and ```--message``` can be used to specify the version's commit hash, or its message. 
 
+If the user wishes to obtain a BAM file from any alignment file they've added, they can add the flag ```--bam=1``` to ```genomegit get```.
+
 The command ```genomegit list``` will obtain a list with all the file names present within the repository. To revert back to the main branch, you can type ```genomegit checkout <branch name>```. 
 
 ### 5. Reporting changes that occurred between versions

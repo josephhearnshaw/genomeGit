@@ -16,6 +16,7 @@ import tabix
 # Create a lock for update_sequence
 lock = multiprocessing.Lock()
 
+
 # Create a function to eliminate repeated barcodes in sub SAM files (this can mess arround with the merge process)
 def prepare_barcode(infile, outfile):
     # Initiate the index and open the input file
@@ -27,7 +28,7 @@ def prepare_barcode(infile, outfile):
                 line = line.split("\t")
                 new_index = line[-1]
                 # If the new index is equal to the old one, skip the line
-                if(new_index == old_index):
+                if (new_index == old_index):
                     continue
                 # Otherwise include the line in the output file
                 else:
@@ -46,10 +47,10 @@ def merge_subfiles(dataset, subfile_name, template_length):
         "./temporary_directory/{}_metadata".format(subfile_name), "r")
     # Read through all the comments of the metadata
     line_metadata = metadata.readline()
-    while(line_metadata[0] == "@" or line_metadata[0] == "#"):
+    while (line_metadata[0] == "@" or line_metadata[0] == "#"):
         line_metadata = metadata.readline()
     # If the dataset is alignment, there are two subfiles
-    if(dataset == "Alignment"):
+    if (dataset == "Alignment"):
         # Open the updated and discarded files
         # Open the updated file in append mode since it already contains the comments
         updated_file = open(
@@ -71,9 +72,9 @@ def merge_subfiles(dataset, subfile_name, template_length):
         line_A = file_A.readline().rstrip().split("\t")
         line_B = file_B.readline().rstrip().split("\t")
         # Start looping through the metadata file
-        while(len(line_metadata) > 1):
+        while (len(line_metadata) > 1):
             # If the one of the reads is already empty, discard the rest of the metadata
-            if(len(line_A) != 3 or len(line_B) != 3):
+            if (len(line_A) != 3 or len(line_B) != 3):
                 discarded_file.write("\t".join(line_metadata[1:]))
                 line_metadata = metadata.readline().split("\t")
             # Otherwise updata the metadata
@@ -83,14 +84,14 @@ def merge_subfiles(dataset, subfile_name, template_length):
                 barcode_A = line_A[2]
                 barcode_B = line_B[2]
                 # Check if the barcodes match. If they do, write the new line with the new TLENGHT
-                if(barcode_metadata == barcode_A and barcode_metadata == barcode_B):
+                if (barcode_metadata == barcode_A and barcode_metadata == barcode_B):
                     # Read A new coordiantes and newID
                     line_metadata[3] = line_A[0]
                     line_metadata[4] = line_A[1]
                     # New coordinate for read B
                     line_metadata[8] = line_B[1]
                     # New seqID for read B: if the seqID is identical in both reads, place a = and determine the TLENGTH
-                    if(line_B[0] == line_A[0]):
+                    if (line_B[0] == line_A[0]):
                         line_metadata[7] = "="
                         line_metadata[9] = str(int(line_B[1]) - int(line_A[1]))
                         # Write the line in the output file,omit the barcode.
@@ -117,7 +118,7 @@ def merge_subfiles(dataset, subfile_name, template_length):
                 # If the barcodes dont match, one of the reads was discarded at some point.
                 # If the barcode of both reads match, then both reads were discarded. Discard the
                 # entire entry and loop to the next line of the metadata
-                elif(barcode_A == barcode_B):
+                elif (barcode_A == barcode_B):
                     # Discard the entry
                     discarded_file.write("\t".join(line_metadata[1:]))
                     # Read the next line
@@ -128,7 +129,7 @@ def merge_subfiles(dataset, subfile_name, template_length):
                     # Discard the entry
                     discarded_file.write("\t".join(line_metadata[1:]))
                     # Determine which read was discarded
-                    if(int(barcode_A) > int(barcode_B)):
+                    if (int(barcode_A) > int(barcode_B)):
                         # If line A was discarded, read the next line in the file B and split it by the tabs
                         line_B = file_B.readline().rstrip().split("\t")
                         # Read as well the next one in the metadata
@@ -144,7 +145,7 @@ def merge_subfiles(dataset, subfile_name, template_length):
         updated_file.close()
         discarded_file.close()
     # If it is annotation
-    elif(dataset == "Annotation"):
+    elif (dataset == "Annotation"):
         # Open the updated and discarded files
         # Open the updated file in append mode since it already contains the comments
         updated_file = open(
@@ -166,9 +167,9 @@ def merge_subfiles(dataset, subfile_name, template_length):
         line_A = file_A.readline().rstrip().split("\t")
         line_B = file_B.readline().rstrip().split("\t")
         # Start looping through the metadata file
-        while(len(line_metadata) > 1):
+        while (len(line_metadata) > 1):
             # If the one of the reads is already empty, discard the rest of the metadata
-            if(len(line_A) != 3 or len(line_B) != 3):
+            if (len(line_A) != 3 or len(line_B) != 3):
                 discarded_file.write("\t".join(line_metadata[1:]))
                 line_metadata = metadata.readline().split("\t")
             # Otherwise updata the metadata
@@ -178,9 +179,9 @@ def merge_subfiles(dataset, subfile_name, template_length):
                 barcode_A = line_A[2]
                 barcode_B = line_B[2]
                 # Check if the barcodes match. If they do, write the new line with the new coordinates and seqIDs
-                if(barcode_metadata == barcode_A and barcode_metadata == barcode_B):
+                if (barcode_metadata == barcode_A and barcode_metadata == barcode_B):
                     # Only if both parts have been mapped to the same region, add them to the updated file
-                    if(line_A[0] == line_B[0]):
+                    if (line_A[0] == line_B[0]):
                         # Part A new coordiantes and newID
                         line_metadata[1] = line_A[0]
                         line_metadata[4] = line_A[1]
@@ -198,7 +199,7 @@ def merge_subfiles(dataset, subfile_name, template_length):
                 # If the barcodes dont match, one of the reads was discarded at some point.
                 # If the barcode of both reads match, then both reads were discarded. Discard the
                 # entire entry and loop to the next line of the metadata
-                elif(barcode_A == barcode_B):
+                elif (barcode_A == barcode_B):
                     # Discard the entry
                     discarded_file.write("\t".join(line_metadata[1:]))
                     # Read the next line
@@ -209,7 +210,7 @@ def merge_subfiles(dataset, subfile_name, template_length):
                     # Discard the entry
                     discarded_file.write("\t".join(line_metadata[1:]))
                     # Determine which read was discarded
-                    if(int(barcode_A) > int(barcode_B)):
+                    if (int(barcode_A) > int(barcode_B)):
                         # If line A was discarded, read the next line in the file B and split it by the tabs
                         line_B = file_B.readline().rstrip().split("\t")
                         # Read as well the next one in the metadata
@@ -243,9 +244,9 @@ def merge_subfiles(dataset, subfile_name, template_length):
         line_metadata = line_metadata.split("\t")
         line_A = file_A.readline().rstrip().split("\t")
         # Start looping through the metadata file
-        while(len(line_metadata) > 1):
+        while (len(line_metadata) > 1):
             # If the one of the reads is already empty, discard the rest of the metadata
-            if(len(line_A) != 5):
+            if (len(line_A) != 5):
                 discarded_file.write("\t".join(line_metadata[1:]))
                 line_metadata = metadata.readline().split("\t")
             # Otherwise update the metadata
@@ -256,7 +257,7 @@ def merge_subfiles(dataset, subfile_name, template_length):
                 barcode_metadata = line_metadata[0]
                 barcode_A = line_A[4]
                 # Check if the barcodes match. If they do, write the new line with the new TLENGHT
-                if(barcode_metadata == barcode_A):
+                if (barcode_metadata == barcode_A):
                     # Read A new coordiantes, newID and updated bases
                     line_metadata[1] = line_A[0]
                     line_metadata[2] = line_A[1]
@@ -285,8 +286,6 @@ def merge_subfiles(dataset, subfile_name, template_length):
 # Create a funciton to analyse the alignment of a given sequence and append the updated/discarded
 # entries into the global output dictionaries
 def update_sequence(query_obj, query_count, number_of_queries):
-    # Execute the query
-    # Popen(query_obj.query, shell=True).wait()
 
     # only change seqIDs if sequence is identical
     if query_obj.type == "identical":
@@ -502,16 +501,16 @@ def update_variance_entry(entry, newID, displacement_factor):
 
 def process_snp(entry, curr_snp, entry_coord, snp_coord, dataset, displacement_factor, inversed=False):
     displacement_change = 0
-    if(entry_coord == snp_coord and dataset == "Variants"):
+    if (entry_coord == snp_coord and dataset == "Variants"):
         # if the variant has been deleted, replace the barcode with 'discarded' so that it is discarded downstream
         if curr_snp[2] == '.':
             entry[-1] = 'discarded'
         entry[2] = curr_snp[2]
-    if(curr_snp[1] == "."):
+    if (curr_snp[1] == "."):
         # Add one to the entry index
         displacement_change = 1
     # It is a deletion
-    elif(curr_snp[2] == "."):
+    elif (curr_snp[2] == "."):
         # Remove one to the entry indexes
         displacement_change = -1
     if inversed:
@@ -526,12 +525,12 @@ def interpret_alignment(queries, threads, ToUpdate, tlength, new_assembly):
     # {dataset:[[filename.extension,directory,size],[]...]}
     for dataset in ToUpdate.keys():
         # No comments in the genome dataset
-        if(dataset != "Genome"):
+        if (dataset != "Genome"):
             # Loop through the files of the dataset
             for subfile in ToUpdate[dataset]:
                 # Add the comments of the original file into the updated one
                 # Ignore alignment, new alignment headers will be generated later
-                if(dataset != "Alignment"):
+                if (dataset != "Alignment"):
                     ShellCommand = Popen(
                         "cp ./" + subfile[1] + "/Comments.txt ./temporary_directory/" + subfile[0], shell=True).wait()
     # From now on this part can be threaded, one thread analysing one tabix query at a time.
@@ -563,8 +562,7 @@ def interpret_alignment(queries, threads, ToUpdate, tlength, new_assembly):
     # Process tabix queries with multi-processing
     pool = multiprocessing.Pool(threads)
     for i, query in enumerate(queries):
-        update_sequence(query, i, number_of_queries)
-        # pool.apply_async(update_sequence, args=(query, i, number_of_queries))
+        pool.apply_async(update_sequence, args=(query, i, number_of_queries))
     pool.close()
     pool.join()
 
@@ -574,7 +572,7 @@ def interpret_alignment(queries, threads, ToUpdate, tlength, new_assembly):
 
     # Finally, when the files are created it is required to sort them. Loop through the datasets.
     for dataset in ToUpdate.keys():
-        if(dataset != "Genome"):
+        if (dataset != "Genome"):
             # Loop through the files of the dataset
             for subfile in ToUpdate[dataset]:
                 # Inform the user
@@ -582,7 +580,7 @@ def interpret_alignment(queries, threads, ToUpdate, tlength, new_assembly):
                     subfile[0], str(datetime.datetime.now())))
                 sys.stdout.flush()
                 # If the dataset is alignment
-                if(dataset == "Alignment"):
+                if (dataset == "Alignment"):
                     # Append the missing unmapped reads into the updated files (these reads wont be included otherwise)
                     ShellCommand = Popen("tabix ./temporary_directory/{}_A.gz *:0 >> "
                                          "./temporary_directory/updated_{}_A"
@@ -597,7 +595,7 @@ def interpret_alignment(queries, threads, ToUpdate, tlength, new_assembly):
                     ShellCommand = Popen("sort --numeric-sort -k 3 ./temporary_directory/updated_{}_B > "
                                          "./temporary_directory/sorted_updated_{}_B"
                                          .format(subfile[0], subfile[0]), shell=True).wait()
-                elif(dataset == "Annotation"):
+                elif (dataset == "Annotation"):
                     # Sort the reads in both A and B files using the barcode
                     ShellCommand = Popen("sort --numeric-sort -k 3 ./temporary_directory/updated_{}_A > "
                                          "./temporary_directory/sorted_updated_{}_A"
@@ -616,11 +614,12 @@ def interpret_alignment(queries, threads, ToUpdate, tlength, new_assembly):
                     dataset=dataset, subfile_name=subfile[0], template_length=int(tlength))
 
                 # Add new headers to the new alignment file
-                if(dataset == "Alignment"):
+                if (dataset == "Alignment"):
                     ShellCommand = Popen("samtools faidx " + new_assembly, shell=True).wait()
                     ShellCommand = Popen("samtools view -ht " + new_assembly + ".fai " +
                                          "./temporary_directory/{}".format(subfile[0]) +
-                                         " > ./temporary_directory/{}".format(subfile[0] + "_commented"), shell=True).wait()
+                                         " > ./temporary_directory/{}".format(subfile[0] + "_commented"),
+                                         shell=True).wait()
                     os.rename("./temporary_directory/{}".format(subfile[0] + "_commented"),
                               "./temporary_directory/{}".format(subfile[0]))
                     os.remove(new_assembly + ".fai")

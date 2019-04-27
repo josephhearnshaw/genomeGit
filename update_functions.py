@@ -3,9 +3,12 @@
 # PYTHON FUNCTIONS USED FOR REPOSITORY UPDATES
 
 
-# Create detect_updates function to return a dictionary informing of the files to be updated
-# {dataset:[[filename,directory,size],[...]]}
 def detect_updates(map_path):
+    """
+    Create detect_updates function to return a dictionary informing of the files to be updated
+    {dataset:[[filename,directory,size],[...]]}
+    """
+
     # Initiate empty variable and empty dictionary {dataset:[[filename.extension,directory,size],[...]]}
     empty = True
     ToUpdate = {}

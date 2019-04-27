@@ -10,12 +10,15 @@ import sys
 from subprocess import Popen
 
 
-# Define the parse contig function. This function will take a nucleotide sequence,
-# the number of the sequence count, the map file, the current folder and the
-# sequence index as input parameters. It will create a file for each contig,
-# but if the 250.000 nt threshold is reached it will create a folder contaiing equally
-# sized files. Additionally it has to return the updated index.
 def parse_cntg(seq, number, map_file, folder, seq_index):
+    """
+    Define the parse contig function. This function will take a nucleotide sequence,
+    the number of the sequence count, the map file, the current folder and the
+    sequence index as input parameters. It will create a file for each contig,
+    but if the 250.000 nt threshold is reached it will create a folder contaiing equally
+    sized files. Additionally it has to return the updated index.
+    """
+
     # Save the input arguments
     current_nucleotides = seq
     i = number
@@ -62,11 +65,15 @@ def parse_cntg(seq, number, map_file, folder, seq_index):
     return index
 
 
-# Define the parse scaffold function. This function will take a nucleotide sequence, the map file,
-# the current folder and the sequence index as input parameters.
-# It will create a folder for each scaffold, and pass each contig to the parse_cntg function.
-# It has to return an updated index.
+
 def parse_scf(seq, folder, map_file, seq_index):
+    """
+    Define the parse scaffold function. This function will take a nucleotide sequence, the map file,
+    the current folder and the sequence index as input parameters.
+    It will create a folder for each scaffold, and pass each contig to the parse_cntg function.
+    It has to return an updated index.
+    """
+
     # Save the arguments
     current_nucleotides = seq
     current_dir = folder
@@ -105,10 +112,15 @@ def parse_scf(seq, folder, map_file, seq_index):
     # Return the updated index
     return index
 
-# Create a method to parse the super subsequences. This function will take a nucleotide sequence, the map file, the current folder and the sequence index as input parameters. It will create a folder for each supersubseq, and pass each scaffold or contig to their respective parsing function.It has to return an updated index.
-
 
 def parse_super(seq_list, gap_list, folder, map_file):
+    """
+    Create a method to parse the super subsequences. This function will take a nucleotide sequence,
+    the map file, the current folder and the sequence index as input parameters.
+    It will create a folder for each supersubseq, and pass each scaffold or contig to their
+    respective parsing function. It has to return an updated index.
+    """
+
     # Save the arguments
     super_subseq_list = seq_list
     super_gaps_list = gap_list
@@ -120,7 +132,8 @@ def parse_super(seq_list, gap_list, folder, map_file):
     # For each of the super subsequences, determine their class and act accordingly
     for x in range(0, len(super_subseq_list)):
         subseq_count = subseq_count + 1
-        # If the super subsequence is empty (this will occur when the sequence starts or ends with Ns) dont do anything, only update the map if necessary
+        # If the super subsequence is empty (this will occur when the sequence starts or ends with Ns) dont do anything
+        # only update the map if necessary
         if(len(super_subseq_list[x]) == 0):
             # Unless this empty supergap is at the end (this would mean the sequence ends with Ns), update the map file
             if(x != len(super_gaps_list)):
@@ -154,10 +167,12 @@ def parse_super(seq_list, gap_list, folder, map_file):
                     index + len(super_gaps_list[x]) - 1)))
                 index = index + len(super_gaps_list[x])
 
-# Create a parse nucleotides function. This function parses the nucleotides of a sequence using parse_cntg, parse_scf and parse_super.
-
-
 def parse_nucleotides(seq, number, map_file):
+    """
+    Create a parse nucleotides function. This function parses the nucleotides of a sequence using parse_cntg,
+    parse_scf and parse_super.
+    """
+
     # Store the arguments
     current_nucleotides = seq
     i = number
@@ -205,10 +220,12 @@ def parse_nucleotides(seq, number, map_file):
             parse_super(seq_list=super_subseq_list,
                         gap_list=super_gaps_list, folder=current_dir, map_file=map)
 
-# Define a the contig and the scaffold classification function. They will return true when one of these sequences is detected
-
-
 def IsContig(seq):
+    """
+    Define a the contig and the scaffold classification function.
+    They will return true when one of these sequences is detected
+    """
+
     # Check if it has gaps bigger than N-25, in which case this is a contig
     if(seq.find("NNNNNNNNNNNNNNNNNNNNNNNNN") == -1):
         return True
@@ -223,45 +240,13 @@ def IsScaffold(seq):
     else:
         return False
 
-# Create lowest_highest function that will be used for parsing annotation and variants datasets. It returns the highest and the lowest indexes in the output file.
-
-
-def lowest_highest(output_file, mode):
-    # When the file is completely written, is necessary to write in the seqID map file the information
-    # Initiate lowest and highest values (indicate the lowest and the highest index inside the file)
-    lowest = 99999999999999999999999999999999
-    highest = 0
-    # If it is a variants file, determine if its index is higher than highest or lower than lowest, and substitute it if so.
-    if(mode == "Variants"):
-        # Loop through the lines of the file
-        for line in output_file:
-            if(int(line.split("\t")[0]) > highest):
-                highest = int(line.split("\t")[0])
-            if(int(line.split("\t")[0]) < lowest):
-                lowest = int(line.split("\t")[0])
-    # If it is an alignment file, the index is in the field 3
-    if(mode == "Alignment"):
-        # Loop through the lines of the file
-        for line in output_file:
-            if(int(line.split("\t")[3]) > highest):
-                highest = int(line.split("\t")[3])
-            if(int(line.split("\t")[3]) < lowest):
-                lowest = int(line.split("\t")[3])
-    # Same for annotation
-    else:
-        # Loop through the lines of the file
-        for line in output_file:
-            if(int(line.split("\t")[3]) > highest):
-                highest = int(line.split("\t")[3])
-            if(int(line.split("\t")[2]) < lowest):
-                lowest = int(line.split("\t")[2])
-    # Return results
-    return [str(lowest), str(highest)]
-
-# Create a function parse dependent file to parse a the information of a dependent file contained in a dependent dictionary into the repository
-
 
 def parse_dependent_dict(DependentDict):
+    """
+    Create a function parse dependent file to parse a the information of a dependent file contained
+    in a dependent dictionary into the repository
+    """
+
     # Initiate required variables
     seq_count = 0
     # Create a SeqID_Map file. This map file stores information about the seqID, the location of files and the count of sequences
@@ -290,6 +275,7 @@ def parse_dependent_dict(DependentDict):
     # Close seqID map
     seqID_map.close()
 
+
 def format_bytes(size):
     # 2**10 = 1024
     power = 2**10
@@ -300,12 +286,15 @@ def format_bytes(size):
         n += 1
     return str(size), power_labels[n]+'B'
 
-# Create a parse dataset function to parse a given dataset in a file into the repository structure
+
 def parse_dataset(dataset, input_path, size, update):
+    """
+    Create a parse dataset function to parse a given dataset in a file into the repository structure
+    """
+
     file_size = os.path.getsize(input_path)
     size, label = format_bytes(file_size)
     size = str(size)
-    
 
     # PARSE A GENOME DATASET
 
@@ -424,6 +413,7 @@ def parse_dataset(dataset, input_path, size, update):
                     comment_file.close()
                     annotation_file.close()
                     sys.exit()
+
                 # If the seqId is already a key in the dictionary, append the new line to the list (but without the seqID)
                 elif (line[0] in annotation_dict.keys()):
                     # Determine the region of the current line using the start index
@@ -435,6 +425,7 @@ def parse_dataset(dataset, input_path, size, update):
                     # Otherwise create a new list with the line
                     else:
                         annotation_dict[line[0]][region] = ["\t".join(line)]
+
                 # If this seqId is not in the dictionary, create a new list and add the current line, and update the key count
                 # This key count will help to know the order of the sequences when reconstructing the file (dictionaries are not sorted, so
                 # its entries will be shown in random order).
@@ -522,9 +513,10 @@ def parse_dataset(dataset, input_path, size, update):
                     # Otherwise create a new list with the line
                     else:
                         variants_dict[line[0]][region] = ["\t".join(line)]
+
                 # If this seqId is not in the dictionary, create a new list and add the current line, and update the key count
-                # This key count will help to know the order of the sequences when reconstructing the file (dictionaries are not sorted, so
-                # its entries will be shown in random order).
+                # This key count will help to know the order of the sequences when reconstructing the file
+                # (dictionaries are not sorted, so its entries will be shown in random order).
                 else:
                     variants_dict[line[0]] = {}
                     # Determine the region of the current line using the start index
@@ -534,7 +526,8 @@ def parse_dataset(dataset, input_path, size, update):
         # Close the files
         comment_file.close()
         variants_file.close()
-        # Use the parse dependent dict function to parse the information contained in the resulting dictionary into the repo
+        # Use the parse dependent dict function to parse the information
+        # contained in the resulting dictionary into the repo
         parse_dependent_dict(DependentDict=variants_dict)
         # If this is an update it is required to update the repomap
         if(update):
@@ -545,7 +538,8 @@ def parse_dataset(dataset, input_path, size, update):
                 for line in repomap:
                     # Split the line
                     line = line.split("\t")
-                    # If the current file is has the same name, substitute the field of the size of the file with the new one
+                    # If the current file is has the same name,
+                    # substitute the field of the size of the file with the new one
                     if(os.path.basename(input_path) == line[0]):
                         line[4] = "{} {}\n".format(size, label)
                     # Store the line with or without modification
@@ -583,10 +577,6 @@ def parse_dataset(dataset, input_path, size, update):
             # New path for this file is .sam instead of .bam
             input_path = samOutput_path
 
-            # Create a check file to indicate if it was converted(will be used in reconstruct_functions.py)
-            check_file = open("./converted.txt", "w")
-            check_file.close()
-
             # Change the size of the file to SAM's size
             size = str(os.path.getsize(input_path) / (1024 * 1024))
 
@@ -598,7 +588,8 @@ def parse_dataset(dataset, input_path, size, update):
             for line in repomap:
                 # Split the line
                 line = line.split("\t")
-                # If the current file is has the same name, substitute the field of the size of the file with the new one
+                # If the current file is has the same name,
+                # substitute the field of the size of the file with the new one
                 if(os.path.basename(input_path) == line[0]):
                     line[4] = "{} {}\n".format(size, label)
                 # Store the line with or without modification
@@ -672,7 +663,8 @@ def parse_dataset(dataset, input_path, size, update):
         for seqID in seqID_dict.keys():
             # Write the seqID and its directory
             mapfile.write(">" + seqID + "\t/" + seqID_dict[seqID] + "\n")
-            # Create a list of subfiles and loop through them. Write them in the map file. Sort the files according to their region.
+            # Create a list of subfiles and loop through them. Write them in the map file.
+            # Sort the files according to their region.
             region_list = sorted(os.listdir(
                 "./" + seqID_dict[seqID]), key=lambda x: x[6:])
             for subfile in region_list:
@@ -694,9 +686,13 @@ def parse_dataset(dataset, input_path, size, update):
     return
 
 
-# Create function parse delta file to store the information contained in the mummer delta file
-# into a list with an entry for every alignment [oldID, newID, oldLength, newLength]
+
 def parse_delta_file(file_path):
+    """
+    Create function parse delta file to store the information contained in the mummer delta file
+    into a list with an entry for every alignment [oldID, newID, oldLength, newLength]
+    """
+
     delta_list = []
     # Loop through the lines of the delta file
     with open(file_path, "r") as delta:
@@ -708,9 +704,12 @@ def parse_delta_file(file_path):
     return delta_list
 
 
-# Create a parse_snp_file function to parse a snp file into a dictionary containing
-# the number of insertions, deletions and substitutions for each alignment
 def parse_snp_file(file_path):
+    """
+    Create a parse_snp_file function to parse a snp file into a dictionary containing
+    the number of insertions, deletions and substitutions for each alignment
+    """
+
     # Initiate an empty dictionary {(oldID, newID):[insertions,deletions,substitutions]...}
     snp_dict = {}
     # Open the snp file and loop through its lines
@@ -745,10 +744,13 @@ def parse_snp_file(file_path):
     # Return the dictionary
     return snp_dict
 
-# Create a parse_coords_file function to return a dictionary witht the information contained in the summary coords file
-
 
 def parse_coords_file(file_path):
+    """
+    Create a parse_coords_file function to return a dictionary
+    with the information contained in the summary coords file
+    """
+
     # Create the dictionary {oldID:[lines]}
     coords_dict = {}
     # Open the file and loop through the lines
@@ -765,3 +767,37 @@ def parse_coords_file(file_path):
 
     # Return the dictionary
     return coords_dict
+
+# # Create lowest_highest function that will be used for parsing annotation and variants datasets.
+# # It returns the highest and the lowest indexes in the output file.
+# def lowest_highest(output_file, mode):
+#     # When the file is completely written, is necessary to write in the seqID map file the information
+#     # Initiate lowest and highest values (indicate the lowest and the highest index inside the file)
+#     lowest = 99999999999999999999999999999999
+#     highest = 0
+#     # If it is a variants file, determine if its index is higher than highest or lower than lowest, and substitute it if so.
+#     if(mode == "Variants"):
+#         # Loop through the lines of the file
+#         for line in output_file:
+#             if(int(line.split("\t")[0]) > highest):
+#                 highest = int(line.split("\t")[0])
+#             if(int(line.split("\t")[0]) < lowest):
+#                 lowest = int(line.split("\t")[0])
+#     # If it is an alignment file, the index is in the field 3
+#     if(mode == "Alignment"):
+#         # Loop through the lines of the file
+#         for line in output_file:
+#             if(int(line.split("\t")[3]) > highest):
+#                 highest = int(line.split("\t")[3])
+#             if(int(line.split("\t")[3]) < lowest):
+#                 lowest = int(line.split("\t")[3])
+#     # Same for annotation
+#     else:
+#         # Loop through the lines of the file
+#         for line in output_file:
+#             if(int(line.split("\t")[3]) > highest):
+#                 highest = int(line.split("\t")[3])
+#             if(int(line.split("\t")[2]) < lowest):
+#                 lowest = int(line.split("\t")[2])
+#     # Return results
+#     return [str(lowest), str(highest)]

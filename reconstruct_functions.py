@@ -7,18 +7,25 @@ import re
 import os
 import sys
 import subprocess
-# NEW import
 from subprocess import Popen
 
-# Create a function to return the commit hash for a given commit message
+
 def MessageToHash(message):
+    """
+    Function to return the commit hash for a given commit message
+    """
+
     # Isolate the first commit hash of a given message and return it
     commit_hash = subprocess.check_output(
         'git log --grep="' + message + '" --format=%H -n 1')
     return str(commit_hash).rstrip()
 
-# Create a function to create a list with the subfiles included in a region of interest
+
 def get_files(Dir, Seq, RegionStart, RegionStop):
+    """
+    Function to create a list with the subfiles included in a region of interest
+    """
+
     # Create an empty list
     ToReconstruct = []
     # If the user is interested in a region in particular
@@ -62,8 +69,12 @@ def get_files(Dir, Seq, RegionStart, RegionStop):
                 # Read the next line
                 line = IDfile.readline()
 
-# Create a function to determine if a sequence exists in a file
+
 def check_ID(Seq, Dir):
+    """
+    Function to determine if a sequence exists in a file
+    """
+
     # Open the SeqIDs_Map.txt file
     with open(Dir + "/SeqIDs_Map.txt", "r") as IDfile:
         # Loop through the lines
@@ -81,8 +92,11 @@ def check_ID(Seq, Dir):
     return "none"
 
 
-# Create a function to reconstruct files back from their folders
-def reconstruct_dataset(size, directory, output_file, mode, seqID="0", region="0", update=False, filemode="w", convertToBam="0"):
+def reconstruct_dataset(size, directory, output_file, mode, seqID="0", region="0",
+                        update=False, filemode="w", convertToBam="0"):
+    """
+    Function to reconstruct files back from their folders
+    """
 
     # GENOME RECONSTRUCTION
 
@@ -429,9 +443,12 @@ def reconstruct_dataset(size, directory, output_file, mode, seqID="0", region="0
         if (convertToBam == "1"):
             convertSAMtoBAM(reconstruct.name)
 
-# Convert from SAM to BAM
+
 def convertSAMtoBAM(filename):
-    # Convert SAM back to BAM and remove the SAM file
+    """
+    Convert from SAM to BAM
+    """
+
     print("Now converting SAM to BAM")
     output_name = filename.replace('.sam', '.bam')
     Popen("samtools view -S -b -h -o " + output_name +
@@ -439,8 +456,12 @@ def convertSAMtoBAM(filename):
     print("Conversion done")
     os.remove(filename)
 
-# Create a obtain_file function to obtain the dataset and line size of a given file
+
 def obtain_file(target, mode):
+    """
+    Obtain the dataset and line size of a given file
+    """
+
     # If the provided target is a filename
     if(mode == "filename"):
         # Open the repo map in read mode
@@ -473,8 +494,12 @@ def obtain_file(target, mode):
         # Return the list
         return file_list
 
-# Create a function to return the extension of a given dataset
+
 def get_extension(dataset):
+    """
+    Function to return the extension of a given dataset
+    """
+
     # Return the extension corresponding with each dataset
     if(dataset == "Genome"):
         return ".fa"
@@ -485,8 +510,12 @@ def get_extension(dataset):
     else:
         return ".sam"
 
-# Create function to extract an entire dataset (all the files contained in that dataset)
+
 def extract_dataset(dataset, seqID, region, convertToBam):
+    """
+    Function to extract an entire dataset (all the files contained in that dataset)
+    """
+
     # Extract a list of files for the dataset of interest [[filename,dataset,directory,linesize],[...]]
     file_list = obtain_file(target=dataset, mode="dataset")
     # Get the file extension

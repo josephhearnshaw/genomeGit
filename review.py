@@ -23,7 +23,6 @@ commit_B = str(sys.argv[2])
 number_threads = str(sys.argv[3])
 merge = int(sys.argv[4])
 
-
 # Create a temporary directory
 if(os.path.isdir("./.git/info/temporary_directory")):
     shutil.rmtree("./.git/info/temporary_directory")
@@ -49,11 +48,20 @@ reconstruct_dataset(size=60, directory="./Genome",
 ShellCommand = Popen("git checkout master 2> /dev/null", shell=True).wait()
 
 # Obtain alignment pickle of both assemblies
-alignment_pickle = obtain_alignment_pickle(
+alignment_pickle1 = obtain_alignment_pickle(
     "./.git/info/temporary_directory/assembly_1.fa", "./.git/info/temporary_directory/assembly_2.fa")
-# If the alignemnt containing the information between these two assemblies already exists,
-# parse the information in the alignment files
-if(os.path.isdir(alignment_pickle)):
+alignment_pickle2 = obtain_alignment_pickle(
+    "./.git/info/temporary_directory/assembly_2.fa", "./.git/info/temporary_directory/assembly_1.fa")
+
+# Check If the alignemnt containing the information between these two assemblies already exists
+alignment_pickle = ""
+if(os.path.isdir(alignment_pickle1)):
+    alignment_pickle = alignment_pickle1
+elif(os.path.isdir(alignment_pickle2)):
+    alignment_pickle = alignment_pickle2
+
+# Parse the information in the alignment files if exists
+if(alignment_pickle != ""):
     # Inform the user
     print("A stored alignment has been found. Now loading data.\n")
     # Load the OldNewID dictionary
@@ -73,7 +81,7 @@ else:
                                  directory="./.git/info/temporary_directory",
                                  threads=number_threads, ToUpdate=ToUpdate,
                                  alignment_pickle=alignment_pickle, aligner_switch=2,
-                                 percent_identity=95, kmer=15, segLength=5000, c_flag=65, b_flag=200, ms_flag=1)
+                                 percent_identity=95, kmer=15, segLength=5000, c_flag=2000, b_flag=1, ms_flag=1)
 
     # Store the pickle [tabix_queries,OldNewID_Dict,alignment_pickle,summary_Dict]
     store_variables(variables=variables, alignment_pickle=alignment_pickle)

@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-# Arguments: filename dataset sequence region
-
 # Make the imports
 import sys
 from reconstruct_functions import reconstruct_dataset, obtain_file, extract_dataset
@@ -18,6 +16,7 @@ if(str(sys.argv[2]) != "0"):
     else:
         extract_dataset(dataset=str(sys.argv[2]), seqID=str(
             sys.argv[3]), region=str(sys.argv[4]), convertToBam=str(sys.argv[5]))
+
 # Otherwise the user only wants to reconstruct a file of intererst
 else:
     # Obtain file name

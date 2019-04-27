@@ -6,10 +6,12 @@
 import hashlib
 import pickle
 
-# Create a store_variables function to store the provided variables into a pickle
-
 
 def store_variables(variables, alignment_pickle):
+    """
+    Create a store_variables function to store the provided variables into a pickle
+    """
+
     # Open a pickle
     with open("{}/pickle".format(alignment_pickle), "wb") as pickle_file:
         # Store the variable list
@@ -17,10 +19,12 @@ def store_variables(variables, alignment_pickle):
     # Close the pickle
     pickle_file.close()
 
-# Create a load_variables function to load variabled from a pickle file
-
 
 def load_variables(alignment_pickle):
+    """
+    Create a load_variables function to load variabled from a pickle file
+    """
+
     # Open the pickle
     with open(alignment_pickle, "rb") as pickle_file:
         # Load the alignment pickle.
@@ -30,11 +34,13 @@ def load_variables(alignment_pickle):
     # Return the data
     return variables
 
-# Create a obtain_alignment_pickle to obtain the name of the pickle of two given assemblies
-
 
 def obtain_alignment_pickle(old_assembly, new_assembly):
-    # Inititate the content list
+    """
+    Create a obtain_alignment_pickle to obtain the name of the pickle of two given assemblies
+    """
+
+    # Initiate the content list
     content = []
     # Open the new assembly and loop through the lines
     with open(new_assembly, "r") as new_assembly_file:

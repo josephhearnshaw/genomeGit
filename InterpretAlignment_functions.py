@@ -283,15 +283,19 @@ def merge_subfiles(dataset, subfile_name, template_length):
     metadata.close()
 
 
-# Create a funciton to analyse the alignment of a given sequence and append the updated/discarded
-# entries into the global output dictionaries
-def update_sequence(query_obj, query_count, number_of_queries):
 
-    # only change seqIDs if sequence is identical
+def update_sequence(query_obj, query_count, number_of_queries):
+    """
+    Create a function to analyse the alignment of a given sequence and append the updated/discarded
+    entries into the global output files
+    only change seqIDs if sequence is identical
+    """
+
+    # Change seqIDs
     if query_obj.type == "identical":
         process_identical_query(query_obj)
 
-    # change seqIDs and coordinates (plus bases for variants), if the sequence has been reversed
+    # Change seqIDs and coordinates (plus bases for variants), if the sequence has been reversed
     elif query_obj.type == "reversed":
         process_reversed_query(query_obj)
 
@@ -306,10 +310,11 @@ def update_sequence(query_obj, query_count, number_of_queries):
 
 def process_identical_query(query_obj):
     """
-    loops through the output of a 'identical' query and processes all entries. The function used to update
+    Loops through the output of a 'identical' query and processes all entries. The function used to update
     the entries is defined before the loop to reduce the if-clauses evaluated in every iteration (slight
     performance increase)
     """
+
     # Execute the tabix query, skip query if empty result
     try:
         tb = tabix.open(query_obj.originalFile)
@@ -340,10 +345,11 @@ def process_identical_query(query_obj):
 
 def process_reversed_query(query_obj):
     """
-    loops through the output of a 'reversed' query and processes all entries. The function used to update
+    Loops through the output of a 'reversed' query and processes all entries. The function used to update
     the entries is defined before the loop to reduce the if-clauses evaluated in every iteration (slight
     performance increase)
     """
+
     # Execute the tabix query, skip query if empty result
     try:
         tb = tabix.open(query_obj.originalFile)
@@ -384,11 +390,12 @@ def process_reversed_query(query_obj):
 
 def process_compare_query(query_obj):
     """
-    loops through the output of a 'compare' query and processes all entries. The function used to update
+    Loops through the output of a 'compare' query and processes all entries. The function used to update
     the entries is defined before the loop to reduce the if-clauses evaluated in every iteration (slight
     performance increase).
     Uses the SNPs list (as generator) to loop through entries and SNPs concomitantly.
     """
+
     # Execute the tabix query, skip query if empty result
     try:
         tb = tabix.open(query_obj.originalFile)
@@ -519,10 +526,14 @@ def process_snp(entry, curr_snp, entry_coord, snp_coord, dataset, displacement_f
 
 
 def interpret_alignment(queries, threads, ToUpdate, tlength, new_assembly):
+    """
+    Add the comments of the original files into the beginning of the updated ones.
+    Loop through the datasets and act accordingly.
+    {dataset:[[filename.extension,directory,size],[]...]}
+    """
+
     number_of_queries = len(queries)
-    # Add the comments of the original files into the begining of the updated ones.
-    # Loop through the datasets and act accordingly.
-    # {dataset:[[filename.extension,directory,size],[]...]}
+
     for dataset in ToUpdate.keys():
         # No comments in the genome dataset
         if (dataset != "Genome"):

@@ -73,17 +73,21 @@ def reverse_complement(seq):
 
 
 def obtain_SHA1(input_string):
-    """ This function calculates the SHA-1 hash of the input sequneces
-    It requires the sequence obtained from the assembly dictionary """
+    """
+    This function calculates the SHA-1 hash of the input sequneces
+    It requires the sequence obtained from the assembly dictionary
+    """
+
     # Calculate the SHA-1 hash of both input sequences
     return str(hashlib.sha1(input_string).hexdigest())
 
 
 def process_fasta_entry(def_line, seq):
     """
-    take the defline and sequence of a fasta entry and return its header, seqID and forward as well as
+    Take the defline and sequence of a fasta entry and return its header, seqID and forward as well as
     reverse SHA1 hashes of the sequence
     """
+
     header = def_line[1:]
     ID = header.split()[0]
     forward_hash = obtain_SHA1(seq)
@@ -96,9 +100,10 @@ def process_fasta_entry(def_line, seq):
 def parse_assembly(assembly_file):
     """
     parse multifasta file into dictionary of the form:
-        {seqID: (FASTA_header, sequence_length, forward_hash, reverse_hash)}
+    {seqID: (FASTA_header, sequence_length, forward_hash, reverse_hash)}
     with the hashes generated from the respective fasta sequence.
     """
+
     # Create output dictionary
     assembly_list = []
     # Open the asembly file
@@ -131,7 +136,10 @@ def parse_assembly(assembly_file):
 
 
 def parse_snp_file(file_path):
-    """ Parse all the SNP data into a dictionary as {SeqID: "oldIndex oldChar newChar newIndex", "...",} """
+    """
+    Parse all the SNP data into a dictionary as {SeqID: "oldIndex oldChar newChar newIndex", "...",}
+    """
+
     # Initate variables
     snp_dict = {}
     # Open the file and loop through the lines
@@ -153,10 +161,12 @@ def parse_snp_file(file_path):
 
 
 def calculate_MashMap_score(Blocks, lengthA, lengthB):
-    """ This function calculates the score, as described further in documentation.
+    """
+    This function calculates the score, as described further in documentation.
     It requires each block of the output, and the lengths of the query and reference blocks.
     A resultant score is produced, which is used later to filter data to find which alignments
-    should be used for further analysis. """
+    should be used for further analysis.
+    """
 
     # Initiate the coherence and block count
     coherence = 0
@@ -190,7 +200,9 @@ def calculate_MashMap_score(Blocks, lengthA, lengthB):
 
 
 def parse_mashMap_line(line):
-    """ Split each line and parse each index into its respective elements i.e. query = line[0] """
+    """
+    Split each line and parse each index into its respective elements i.e. query = line[0]
+    """
     line = line.split()
     query, query_length, query_start, query_end, ref, ref_length, ref_start, ref_end = \
         line[0], line[1], line[2], line[3], line[5], line[6], line[7], line[8]
@@ -200,10 +212,12 @@ def parse_mashMap_line(line):
 
 
 def parse_mashMap_output_to_Dict(input_file):
-    """ This function parses the mashmap output into a dictionary. It uses a query key and a refernece key;
-these keys correspodn to the query and reference names and their associated lengths, respectively. Each
+    """
+    This function parses the mashmap output into a dictionary. It uses a query key and a refernece key;
+    these keys correspodn to the query and reference names and their associated lengths, respectively. Each
     key will contain its respective block. The function will check to see if there is a new alignment. If
-    there is, it'll add the new keys."""
+    there is, it'll add the new keys.
+    """
 
     # Declare the unfiltered dictionary
     Unfiltered_MashDict = {}  # {[blocks and modifications]}
@@ -236,11 +250,12 @@ these keys correspodn to the query and reference names and their associated leng
 
 
 def find_best_mashmap_alignment(query_length, alignment_dict):
-    """This function takes the query length and the alignment dictionary. It will then
-find the best alignments and return the reference key and score associated with those
-alignments
-
-This is for MashMap"""
+    """
+    This function takes the query length and the alignment dictionary. It will then
+    find the best alignments and return the reference key and score associated with those
+    alignments
+    This is for MashMap
+    """
 
     # Obtain the keys
     refs = list(alignment_dict.keys())
@@ -264,9 +279,11 @@ This is for MashMap"""
 
 
 def retrieve_fasta_sequence_and_make_fifo(pyfaidx_obj, ID, fifo_path):
-    """ This method pipes the sequences as fifos, which are thread safe
-and memory efficient; improving the speed of reading sequences and using less memory.
-    No writing is performed to long-term memory with this method."""
+    """
+    This method pipes the sequences as fifos, which are thread safe
+    and memory efficient; improving the speed of reading sequences and using less memory.
+    No writing is performed to long-term memory with this method.
+    """
 
     # Obtain the sequence using Pyfadix (used as opposed to samtools due to being faster)
     seq = ">{}\n{}".format(ID, pyfaidx_obj[ID][:].seq)
@@ -287,15 +304,17 @@ and memory efficient; improving the speed of reading sequences and using less me
 
 
 def filter_mashMap(mash_file, directory, alignment_pickle, out_file, threads, c_flag, b_flag, ms_flag):
-    """ This function Produces Fasta files for the best alignments and passes them
-to nucmer for alignment."""
+    """
+    This function Produces Fasta files for the best alignments and passes them
+    to nucmer for alignment.
+    """
 
     # Obtain Reference and query fasta files
     reference_directory = "{}/Compare_OldAssembly.fa".format(directory)
     query_directory = "{}/Compare_NewAssembly.fa".format(directory)
     fasta_query = Fasta(query_directory)
     fasta_ref = Fasta(reference_directory)
-# Create a mashMap dictionary out of the contents of the unfiltered MashMap file
+    # Create a mashMap dictionary out of the contents of the unfiltered MashMap file
     with open(mash_file, "r") as input_file:
         Unfiltered_MashDict = parse_mashMap_output_to_Dict(input_file)
 
@@ -364,7 +383,10 @@ to nucmer for alignment."""
 
 
 def get_sequences_mashmap(ref_file_name, query_file_name, name_out, score, c_flag, b_flag):
-    """ This function runs the best alignments through nucmer """
+    """
+    This function runs the best alignments through nucmer
+    """
+
     command = ['nucmer', '--mum', ref_file_name,
                query_file_name, '-p', name_out, '-t', str(1), '-c', str(c_flag), '-b', str(b_flag)]
     # Add score to each delta file at the end of the alignment header line
@@ -374,8 +396,11 @@ def get_sequences_mashmap(ref_file_name, query_file_name, name_out, score, c_fla
 
 
 def multiFasta_construct(ident_rev_assemblies, outfile, fasta_file):
-    """ creates a multifasta file with all sequences, whose IDs are not in ident_rev_assemblies
-            Requires the directories and dictionaries """
+    """
+    Creates a multifasta file with all sequences, whose IDs are not in ident_rev_assemblies
+    Requires the directories and dictionaries
+    """
+
     # Old assembly multi-fastafile
     with open(outfile, "w") as output_file:
         with open(fasta_file, 'r') as input_file:
@@ -396,8 +421,8 @@ def aligner_caller(aligner_switch, threads, nucmer_directory, reference_director
     """
     This function calls the correct aligner, dependent on what the user selects, and executes
     the respective score algorithm for the selected aligner.
-
     """
+
     if aligner_switch == 2:
         # Run nucmer with the resulting multifastas. Use threads.
         print("\n\t\t - Running nucmer {}".format(str(datetime.datetime.now())))
@@ -519,7 +544,7 @@ def obtain_alignment(old_assembly, new_assembly, directory, threads, ToUpdate, a
                         # Loop through the files of the dataset  {dataset:[[filename.extension,directory,size],[...]]}
                         for subfile in ToUpdate[dataset]:
 
-                            # NEW (CLASS) IMPLEMENTATION:
+                            # (CLASS) IMPLEMENTATION:
                             originalFile = "./temporary_directory/{}_A.gz".format(
                                 subfile[0])
                             dependentFile = "./temporary_directory/updated_{}_A".format(
@@ -537,7 +562,7 @@ def obtain_alignment(old_assembly, new_assembly, directory, threads, ToUpdate, a
 
                             if(dataset == "Alignment" or dataset == "Annotation"):
 
-                                # NEW (CLASS) IMPLEMENTATION:
+                                # (CLASS) IMPLEMENTATION:
                                 queries.append(tabix_query.identical(
                                     dataset=dataset, oldSeqID=old_ID, newSeqID=new_ID,
                                     originalFile=originalFile, length=old_length, dependentFile=dependentFile))
@@ -561,7 +586,7 @@ def obtain_alignment(old_assembly, new_assembly, directory, threads, ToUpdate, a
                             seqLength = old_length
 
                             # Create the query for subfile A
-                            # NEW (CLASS) IMPLEMENTATION:
+                            # (CLASS) IMPLEMENTATION:
                             dependentFile = "./temporary_directory/updated_{}_A".format(
                                 subfile[0])
                             originalFile = "./temporary_directory/{}_A.gz".format(
@@ -580,7 +605,7 @@ def obtain_alignment(old_assembly, new_assembly, directory, threads, ToUpdate, a
                             if(dataset == "Alignment" or dataset == "Annotation"):
                                 # Do the same with B
 
-                                # NEW (CLASS) IMPLEMENTATION:
+                                # (CLASS) IMPLEMENTATION:
                                 queries.append(tabix_query.reversed(
                                     dataset=dataset, oldSeqID=old_ID, newSeqID=new_ID,
                                     originalFile=originalFile, length=seqLength, dependentFile=dependentFile))
@@ -627,7 +652,7 @@ def obtain_alignment(old_assembly, new_assembly, directory, threads, ToUpdate, a
                     for subfile in ToUpdate[dataset]:
 
                         # Add the query A
-                        # NEW (CLASS) IMPLEMENTATION:
+                        # (CLASS) IMPLEMENTATION:
                         originalFile = "./temporary_directory/{}_A.gz".format(
                             subfile[0])
                         dependentFile = "./temporary_directory/updated_{}_A".format(
@@ -641,7 +666,7 @@ def obtain_alignment(old_assembly, new_assembly, directory, threads, ToUpdate, a
                         if(dataset != "Variants"):
                             # Do the same with B
 
-                            # NEW (CLASS) IMPLEMENTATION:
+                            # (CLASS) IMPLEMENTATION:
                             originalFile = "./temporary_directory/{}_B.gz".format(
                                 subfile[0])
                             dependentFile = "./temporary_directory/updated_{}_B".format(

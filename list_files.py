@@ -6,11 +6,7 @@
 import sys
 
 # Initate dataset_dict dictionary {dataset:[file_name,...]}
-dataset_dict = {}
-dataset_dict["Genome"] = []
-dataset_dict["Annotation"] = []
-dataset_dict["Variants"] = []
-dataset_dict["Alignment"] = []
+dataset_dict = {"Genome": [], "Annotation": [], "Variants": [], "Alignment": []}
 
 # Open the repomap in read mode
 with open(str(sys.argv[1]), "r") as repomap:

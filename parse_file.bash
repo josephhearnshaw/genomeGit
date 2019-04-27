@@ -64,7 +64,6 @@ else
    if ! [ -d $1 ]; then
       mkdir $1
    fi
-   #NEW
    #Save the file name
    if [[ $2 == *".bam" ]]; then
       fileBasename=$(basename $2)

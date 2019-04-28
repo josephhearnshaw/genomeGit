@@ -131,6 +131,6 @@ The user can alternatively use ```--message=<message>``` if they used a commit m
 
 ```genomegit get --dataset=Variants --sequence=Ch03 --region=1-4000000 --message=My_First_Commit```
 #### Produce reports and summaries of changes between versions
-```genomegit report	--commit-hash 430CE34D020724ED75A196DFC2AD67C77772D169```
+```genomegit report	--commit-hash 352d69d2327dc95b58d6ec10130366ddc760bd3d```
 
 ```genomegit diff --message My_First_Commit My_Second_Commit```

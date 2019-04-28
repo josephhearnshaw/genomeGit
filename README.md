@@ -103,7 +103,8 @@ To view the difference between two versions of the genomic data present within t
 
 The user can alternatively use ```--message=<message>``` if they used a commit message instead. The number of threads can be provided using ```genomegit diff --threads``` or ```--t=<x>```, as previously described. This might prove useful when comparing non-consecutive versions, as comparisons of assembly versions may need to be performed. ```genomegit log``` will provide a list of commits with their hashes.
 
-Using the ```diff``` command will produce a *GenomeGit_report.txt* report file, which contains the all the information regarding the differences between assembly versions.
+The user can also execute ```genomegit report``` to obtain a report output *GenomeGit_Report.txt*, which contains the all the information regarding the differences between assembly versions.
+
 
 ## Common commands
 #### Installing genomeGit

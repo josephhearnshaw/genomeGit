@@ -1,92 +1,136 @@
-# GenomeGit 2: A distributed version control system for genome assembly data.
-GenomeGit is a distributed version control system based on the creation of git repositories for the storage and management of genomic data. Currently, the program is able to deal with the following datasets:
+# genomeGit 3.0: A distributed version control system for fast and efficient updating of genome assembly data.
+genomeGit 3.0 is a distributed version control system which utilizes Git for the quick storage and management of genomic data. It enables quick 'lifting-over' of genomic depedent files, while being storage efficient. GenomeGit 3.0 can currently deal with the following datasets:
 
 * Genome assemblies (FASTA)
 * Variant Calling Files (VCF)
 * Annotation files (GFF/GFF3)
-* Alignment files (SAM)
+* Alignment files (SAM/BAM)
 
-Liftover of VCF, SAM and GFF files upon update of genomic assembly is supported. Currently, it is only compatible with Unix systems.
+GenomeGit 3.0 is currently only compatiable with Unix Operating Systems.
 
-## First steps
-### Prerequisites
-The application requires installation of the following dependencies: 
+# What's changed with genomeGit 3.0?
+genomeGit 3.0 is now able to make use of BAM files. There is also a new hybrid alignment option avaliable using MashMap2 and Nucmer4. 
+In addition, genomeGit 3.0 is faster, more accurate, can handle inversions, and handle both splits and merges within genomic data. 
+
+### Prerequisites for genomeGit 3.0
+The following dependencies are required: 
 * [Python v 2.7+](https://www.python.org/)
 * [Git](https://git-scm.com/downloads)
 * [MUMmer 4.0](https://mummer4.github.io/)
+* [MashMap 2.0](https://github.com/marbl/MashMap)
 * [Tabix](http://www.htslib.org/doc/tabix.html)
+
+genomeGit 3.0 also makes use of the following Python modules: 
+ * [pytabix 0.1](https://pypi.org/project/pytabix/)
+ * [pyfaidx 0.5.5.2](https://pypi.org/project/pyfaidx/)
+
 ### Installation
-In order to be able to run the program, the location of the *GenomeGit* directory is required to be in the *$PATH* variable. This can be done in two different ways:
-#### Temporally append the location of the directory into the *$PATH* variable (not recommended)
-To temporally append *GenomeGit* directory to the *$PATH* variable execute ```PATH=$PATH:directory``` in the shell, where ```directory``` stands for the location of the *GenomeGit* directory. The user may need to make the main script executable using ```chmod u+x <path_to_GenomeGit>/genomegit```. Please note that using this method is only a short-term solution, as it will require the user to perform this operation everytime a terminal is closed and opened.
-#### Permanently append the location of the directory into the *$PATH* variable (recommended)
-In order to easily append  *GenomeGit* directory to the *$PATH* variable permanenlty, a ```genomegit_install``` executable file has been provided. When this file is executed from the shell, it will add a symlink in the ```/usr/bin/ directory``` pointing at the location of the GenomeGit directory. Additionally, the user may need to make the main script executable using ```chmod u+x /usr/bin/genomegit```. This method constitutes a long-term solution, as the user won't need to repeat this operation everytime a terminal is closed and opened or even if the computer is restarted. To unistall GenomeGit, simply remove the GenomeGit directory from your computer and remove the symlink executing ```sudo rm /usr/bin/genomegit```.
+In order to be able to run the program anywhere on your system, the location of the *GenomeGit* directory must be in the *$PATH* variable. Therefore, you can install it by either one of the following two methods:
+#### Temporary solution
+You can temporarily append the *GenomeGit* directory to the *$PATH* variable by executing ```PATH=$PATH:directory```, where ```directory``` repersents the location of the *GenomeGit* directory. The user may need to make the main script executable using ```chmod u+x <path_to_GenomeGit>/genomegit```. 
+
+However, please note that using this method is only a short-term solution. When your terminal, or machine is closed/switched off, you'll have to redo this.
+
+#### Recommended solution
+It's recommended to use the ```genomegit_install``` executable file, provided with genomeGit 3.0. Execute this to create a symlink to genomegit in the ```/usr/bin/ directory``` directory. Again, you may need to make genomegit executable via chmod.
+#### Uninstalling genomeGit 3.0
+
+To uninstall genomeGit, remove the genomeGit directory from your PC and then remove the symlink using the following: ```sudo rm /usr/bin/genomegit```.
 
 ## Running GenomeGit
 
-To display the GenomeGit welcome message type ```genomegit```.
-GenomeGit adapts regular git commands that can be run by typing ```genomegit <git_command>```. [See git documentation for more information on how to use git.](https://git-scm.com/doc)
-Additional commands have been created to deal with the requirements of files containing genomic data.
-To get the list of the most common commands type ```genomegit help```.
+To display the GenomeGit welcome message, execute ```genomegit```.
+
+Please note that genomeGit can make use of Git commands, executed as follows: ```genomegit <git_command>```. [See git documentation for further information on how to use git.](https://git-scm.com/doc)
+
+To get the list of genomeGit commands, execute ```genomegit help```.
 
 ### 1. Initializing the repository
-The repository can be initialized by typing ```genomegit init```, which will create a *.gnmgit* directory. This directory will contain all the genomic data stored in the repository, including the *.git* repository itself. Additionally, it is possible to clone an existing repository using ```genomegit clone <url>```, which will create a *.gnmgit* with the cloned contents inside.
+The repository can be initialized by executing ```genomegit init```, creating a *.gnmgit* directory. 
 
-### 2. Recording changes made into the repository
-Currently GenomeGit 2 is able to store and manage four types of datasets:
+This repository will store all of your genomic data and the *.git* repository. You can clone an existing repository by executing ```genomegit clone <url>```.
 
-* Genome assembly (FASTA).
-* Variant Calling Files (VCF).
-* Annotation files (GFF/GFF3).
-* Sequence Alignment Map files (SAM).
 
-To add files into the repository, simply run ```genomegit add <file>``` and ```genomegit commit -m <message>```. GenomeGit 2 will automatically clasify the input file (FASTA, VCF, SAM or GFF) and parse it into sub-files to be stored in the Git repository. Please note that the GenomeGit 1 command ```genomegit parse <dataset> <file>``` is no longer on use in GenomeGit 2. Additionally, if all the files of interest are located in the same directory, the user may provide the location of this directory: ```genomegit add /path/to/directory/*```. By doing this, GenomeGit will automatically add all the files in the specified directory. It is possible to visualize a summary of the characteristics of the data contained in the repository at any given point by using the command ```genomegit report```. In those cases when a genome assembly is already stored in the repository (with its corresponding VCF, GFF or SAM files) and the user desires to add a newer version of the assembly, GenomeGit will automatically migrate the coordinates of any of the stored SAM, GFF or VCF files to match those of the corresponding new assembly. This procedure, known as liftover, allows to keep the coherence of the data stored in the repository, and can be computationally demanding. Beacuse of this, the optional parameter ```--threads``` can be used to increment the number of threads (deafult *--threads=1*). This parameter is only taken in consideration during liftover, as it will be ignored in any other situation.
+### 2. Adding new files to the repository
+
+To add files into the repository, execute ```genomegit add <file>``` and ```genomegit commit -m <message>```. 
+#### Additional ```add``` arguments
+Additional arguments can be passed to ```genomegit add <file>```, such at the number of threads (```--t=<x>``` or ```--thread=<x>```),  and the aligner you wish to use (```--a=<1 or 2>``` or ```--aligner=<1 or 2>```, where 1 will run the hybrid aligner and 2 runs Nucmer4 only). 
+#### Specific aligner-related flags
+Flags specific to Nucmer4 (```--c=<x>``` or ```--mincluster=<x>```) can be used ([see the NUCmer documentation for information regarding these flags](http://mummer.sourceforge.net/manual/#nucmer)). 
+
+Likewise, the flags ```--k=<x>``` or ```--kmer=<x>``` and ```--s=<x>``` or ```--segLength=<x>``` and ```--pi=<x>``` can be used for MashMap2 ([see the MashMap GitHub page for information regarding these flags](https://github.com/marbl/MashMap)). 
+
+#### Splits and merges related flags
+For the hyrid alignment, the user can also use the flag ```--ms=<x>``` as either 1 or 2, where 2 will also detect merges (but not splits). By default, it'll detect splits (```--ms=1```). 
+
+Using only Nucmer4 will result in the detection of both splits and merges. 
+
+#### Obtaining a report of lifted over assemblies
+genomeGit 3.0 will automatically classify the file inputted and parse it into it's respective Git-compatible sub-files, within the Git repository. A summary of the charactersticis of the data within the repository can be visualised using the command ```genomegit report```. 
+
+When a user already has a genome assembly present within the repository and wishes to update it, genomeGit 3.0 will automatically migrate the coordinates of the stored dependent files. This is called lift-over. This process can be computationally demanding and it is thus recommended to use the optional ```--t=<x>``` or ```--threads=<x>``` parameter to choose the number of threads used during lift-over.
 
 ### 3. Creating a remote repository
-Distributed Version Control Systems (DVCS) have the characteristic of allowing a group of the users to work simultaneously in their local repositories, and eventually sharing this work with the rest of users by adding the changes into a remote repository. Being a DVCS, GenomeGit provides with the same feature to the user, who can create a remote repository at any moment by typing ```genomegit init --bare <RepositoryName>```, where ```<RepositoryName>``` stands for the name given to the bare repository created.
+genomeGit 3.0 enable users to perform updates within thier local repository and push this to a central repository for all users to use. This can be performed by the command ```genomegit init --bare <remote_name>```.
 
-### 4. Remote repository access
-In order to acces a remote repository, it is first needed to add a remote repository address. This can be done by typing ```genomegit remote add <remote_name> <remote_location>```. The parameter ```<remote_location>``` stands for the absolute path to the remote repository of interest if it is located within the same machine where it is being executed, or the username and server IP adress if it is located in a server (```username@xxx.xxx.xx.x```). Please note that ```<remote_name>``` does not need to have the same value as the ```<RepositoryName>``` parameter used in previous section *3. Creating a remote repository*:  ```<remote_name>``` stands simply for the nickname the user wants to refer to this repository when *pushing* and *pulling* from the local repository. To be up to date with the remote repository, the user needs to fetch the remote's data and integrate it to the local repository: ```genomegit pull <remote_name> <branch_name>```. Afterwards, user can introduce changes in the local repository and push them into the remote: ```genomegit push <remote_name>```.
+#### Remote repository within the same machine
+To access a remote repository, the remote repository address needs to be added. This can be done as follows: ```genomegit remote add <remote_name> <remote_location>``` where ```<remote_location>``` is the absolute path to the repository of interested, if located within the same machine it's executed from.
 
-### 5. Version log, checking out a version of interest and listing all the files of a particular dataset
-User can switch to any of the stored assembly versions at any moment by typing ```genomegit checkout <commit_hash>```, where ```<commit_hash>``` stands for the SHA-1 commit hash of the version of interest. To obtain this hash, a review of versions can be viewed by typing ```genomegit log```. Additionally, in order to reconstruct the git-compatible objects containing the information for any of the datasets contained in the repository, type ```genomegit get --dataset --sequence --region --commit-hash --message <filename>```. The mandatory argument ```<filename>``` stands for the name of the file that the user wants to obtain back. Additionally, optional parameters ```--sequence``` and ```--region``` can be used in order to extract only a particular region of a sequence contained in the file of interest (region must be specified in form of two integers separated by a "-", for example ```--region 1-1000```). If the file to be retrieved belongs to a previous version of the repository, optional parameters ```--commit-hash``` and ```--message``` may be used alternatively in order to specify the version's commit hash or message respectively (for example ```--message=Version_A```). Using the command ```genomegit list``` it is possible to obtain a list with the names of the files stored in the repository. In order to revert back to the main branch, type ```genomegit checkout <branch_name>```.
+#### Remote repository from a server 
+To obtain a repository from a server, a username and server IP address is required, i.e. ```your_usernmae@xxx.xxx.xx.x```. 
+The ```<remote_name>``` parameter is the 'nick name' of the repository that the user provides when *pushing* and *pulling* from a local repository. 
 
-### 6. Report of changes occurred between versions.
-The user is able to see the differences between two chosen versions of the data contained in the repository at any time. This can be done by typing ```genomegit diff --threads --message <hash1> <hash2>```, where  ```<hash1> <hash2>``` stand for the hashes of the commits that correspond to the chosen genome versions; or alternatively the commit message if ```--message``` optional parameter is provided. Optional parameter ```--threads``` can be used to provide the number of threads to be used for the obtention of the sequence aligment (this alignment migth be necessary when comparing non-consecutive versions). The list of commits and their hashes can be seen by typing ```genomegit log```. As a result of this command, a summary of the differences between versions will be displayed.
+To update the remote repository, the user can fetch the remote repositories data and *push* it into their local repository by typing ```genomegit pull <remote_name> <branch_name>```. Any changes that were introduced into the local repository can be pushed into the remote by executing ```genomegit push <remote_name>```. 
 
-## Some common commands
-#### Install GenomeGit
+
+### 4. Assembly version log, checking out a Assembly version of interest, and listing all the files of a particular dataset
+#### Switching to a stored assembly version
+You can switch to any of your stored assembly versions by using ```genomegit checkout <commit_hash>```, where ```<commit_hash>``` repersents the SHA-1 commit hash. This can be obtained via executing ```genomegit log```. 
+
+#### Reconstruct Git-compatible files
+To reconstruct any Git-compatible files, such as the extracted VCF data, execute ```genomegit get --dataset --sequence --region --commit-hash --message <filename>```, where ```<filename>``` and ```<get --dataset>``` are required arguments. 
+The ```<filename>``` argument will require the user to enter the file of interest that they wish to reconstruct. 
+
+If a user wishes to reconstruct a Variants datatype, they can execute ```genomegit get --dataset=Variants```. The optional parameters ```--sequence``` and ```--region``` can be used to extract regions of a sequence which are contained within the file of interested. The region must be specified as a range in the form of two integers, seperated by a dash ("-"), e.g. ```--region=1-5000```. If the file of interest belongs to a previous repository version, then ```--commit-hash``` and ```--message``` can be used to specify the version's commit hash, or its message. 
+
+#### List all the files present in the repository
+The command ```genomegit list``` will obtain a list with all the file names present within the repository. 
+To revert back to the main branch, you can type ```genomegit checkout <branch name>```. 
+
+### 5. Reporting changes that occurred between versions
+To view the difference between two versions of the genomic data present within the repository, execute ```genomegit diff --message=<message> <hash1> <hash2>```, where ```<hash1> <hash2>``` repersent the hashes of the commits given to the user following lift-over. 
+
+The user can alternatively use ```--message=<message>``` if they used a commit message instead. The number of threads can be provided using ```genomegit diff --threads``` or ```--t=<x>```, as previously described. This might prove useful when comparing non-consecutive versions, as comparisons of assembly versions may need to be performed. ```genomegit log``` will provide a list of commits with their hashes.
+
+## Common commands
+#### Installing GenomeGit
 ```bash /path/to/directory/genomegit_install```
-#### Initiate empty repository or clone it
+#### Initiating an empty repository, or cloning it
 ```genomegit init```
 
-```genomegit clone username@123.456.78.9:/home/user/repository```
-#### Create a remote repository, connect to it, psuh and pull changes
-```genomegit init --bare RemoteExample```
+```genomegit clone username@138.250.31.98:/home/user/repository```
+#### Creating a remote repository, connecting to it, and push and pull 
+```genomegit init --bare <remote_name>```
 
-```genomegit remote add origin username@123.456.78.9```
+```genomegit remote add origin username@138.250.31.98```
 
 ```genomegit pull origin master```
 
 ```genomegit push origin```
-#### Add and commit files into the repository
-```genomegit add /path/to/directory/*```
+#### Adding and committing files into the repository
+```genomegit add /path/to/directory/*``` 
 
-```genomegit add --threads=8 NewAssembly.fasta```
+```genomegit add --t=32 --a=2 --c=3000 NewAssembly.fa```
 
-```genomegit commit -m "First_Commit"```
-#### Extract a file out of the repository
-```genomegit get MyAssembly.fasta```
+```genomegit commit -m "My_First_Commit"```
+#### Extracting a file out of the repository
+```genomegit get MyAssembly.fa```
 
-```genomegit get MyAnnotation.gff --sequence=Ch01 --region=1-1000000```
+```genomegit get MyAnnotation.gff --sequence=Ch02 --region=1-2000000```
 
-```genomegit get --dataset=Variants --sequence=Ch01 --region=1-1000000 --message=First_Commit```
+```genomegit get --dataset=Variants --sequence=Ch03 --region=1-4000000 --message=My_First_Commit```
 #### Produce reports and summaries of changes between versions
-```genomegit report	--commit-hash e7201f04231d039a48ea41f1f786d4f447361175```
+```genomegit report	--commit-hash 352d69d2327dc95b58d6ec10130366ddc760bd3d```
 
-```genomegit diff --message First_Commit Second_Commit```
-
-
-
-
- 
+```genomegit diff --message My_First_Commit My_Second_Commit```

@@ -54,7 +54,7 @@ This repository will store all of your genomic data and the *.git* repository. Y
 ### 2. Adding new files to the repository
 
 To add files into the repository, execute ```genomegit add <file>``` and ```genomegit commit -m <message>```. 
-#### Additional ```add``` arguments
+#### Additional ```add``` arguments for lift-over
 Additional arguments can be passed to ```genomegit add <file>```, such at the number of threads (```--t=<x>``` or ```--thread=<x>```),  and the aligner you wish to use (```--a=<1 or 2>``` or ```--aligner=<1 or 2>```, where 1 will run the hybrid aligner and 2 runs Nucmer4 only). 
 #### Specific aligner-related flags
 Flags specific to Nucmer4 (```--c=<x>``` or ```--mincluster=<x>```) can be used ([see the NUCmer documentation for information regarding these flags](http://mummer.sourceforge.net/manual/#nucmer)). 

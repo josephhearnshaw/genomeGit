@@ -88,7 +88,7 @@ To update the remote repository, the user can fetch the remote repositories data
 #### Switching to a stored assembly version
 You can switch to any of your stored assembly versions by using ```genomegit checkout <commit_hash>```, where ```<commit_hash>``` repersents the SHA-1 commit hash. This can be obtained via executing ```genomegit log```. 
 
-#### Reconstruct Git-compatible files
+#### Reconstructing Git-compatible files
 To reconstruct any Git-compatible files, such as the extracted VCF data, execute ```genomegit get --dataset --sequence --region --commit-hash --message <filename>```, where ```<filename>``` and ```<get --dataset>``` are required arguments. 
 The ```<filename>``` argument will require the user to enter the file of interest that they wish to reconstruct. 
 
@@ -106,7 +106,7 @@ The user can alternatively use ```--message=<message>``` if they used a commit m
 The user can also execute ```genomegit report``` to obtain a report output *GenomeGit_Report.txt*, which contains the all the information regarding the differences between assembly versions.
 
 
-## Common commands
+## Example commands
 #### Installing genomeGit
 ```bash /path/to/directory/genomegit_install```
 #### Initiating an empty repository, or cloning it

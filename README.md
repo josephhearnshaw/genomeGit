@@ -69,7 +69,7 @@ Using only Nucmer4 will result in the detection of both splits and merges.
 #### Obtaining a report of lifted over assemblies
 genomeGit 3.0 will automatically classify the file inputted and parse it into it's respective Git-compatible sub-files, within the Git repository. A summary of the charactersticis of the data within the repository can be visualised using the command ```genomegit report```. 
 
-When a user already has a genome assembly present within the repository and wishes to update it, genomeGit 3.0 will automatically migrate the coordinates of the stored dependent files. This is called liftover. This process can be computationally demanding and it is thus recommended to use the optional ```--t=<x>``` or ```--threads=<x>``` parameter to choose the number of threads used during liftover.
+When a user already has a genome assembly present within the repository and wishes to update it, genomeGit 3.0 will automatically migrate the coordinates of the stored dependent files. This is called lift-over. This process can be computationally demanding and it is thus recommended to use the optional ```--t=<x>``` or ```--threads=<x>``` parameter to choose the number of threads used during lift-over.
 
 ### 3. Creating a remote repository
 genomeGit 3.0 enable users to perform updates within thier local repository and push this to a central repository for all users to use. This can be performed by the command ```genomegit init --bare <remote_name>```.

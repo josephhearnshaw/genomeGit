@@ -1,19 +1,19 @@
 #!/usr/bin/env python
 
-#	USAGE: The first argument must indicate the dataset to be parsed: Genome, Variants, Annotation. The second argument must indicate the path
-#	to the file be parsed.
+# USAGE: The first argument must indicate the dataset to be parsed: Genome, Variants, Annotation.
+# The second argument must indicate the path to the file be parsed.
 
 ####
-##	***PART 1. IMPORT FUNCTIONS (SUBROUTINES)***
+# ***PART 1. IMPORT FUNCTIONS (SUBROUTINES)***
 ####
 
-#Make the imports
+# Make the imports
 import sys
-import os
 from parse_functions import parse_dataset
 
 #####
-##	***PART 2. PARSE DATASET***
+# ***PART 2. PARSE DATASET***
 #####
 
-parse_dataset(dataset=str(sys.argv[1]),input_path=str(sys.argv[2]),size=str(sys.argv[3]),update=int(sys.argv[4]))
+parse_dataset(dataset=str(sys.argv[1]), input_path=str(
+    sys.argv[2]), size=str(sys.argv[3]), update=int(sys.argv[4]))

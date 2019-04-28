@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 
-# INSTRUCTIONS: The script will update the coordinates of the variants and annotation files of a given
-# genome assembly to match those of a new one. Arguments:
-# update_dependent_datasets.py -new_file- -threads- -file_size- -template_length-
+"""
+INSTRUCTIONS: The script will update the coordinates of the variants and annotation files of a given
+genome assembly to match those of a new one. Arguments:
+update_dependent_datasets.py -new_file- -threads- -file_size- -template_length-
+"""
 
 # Make the imports
 import os
@@ -14,7 +16,6 @@ from reconstruct_functions import reconstruct_dataset
 from ObtainAlignment_functions import obtain_alignment
 from StoreAlignment import store_variables, load_variables, obtain_alignment_pickle
 from InterpretAlignment_functions import interpret_alignment
-import shutil
 
 # Load arguments: new_assembly, threads size, tlength, which aligner to use, and associated mashmap args
 new_assembly = str(sys.argv[1])
@@ -35,10 +36,10 @@ file_size_bytes = os.path.getsize(new_assembly)
 def format_bytes(size):
     "Convert Bytes to relative filesize and return size and associated label i.e. GB/TB"
     # 2**10 = 1024
-    power = 2**10
+    power = 2 ** 10
     n = 0
     power_labels = {0: '', 1: 'K', 2: 'M', 3: 'G', 4: 'T'}
-    while(size > power):
+    while (size > power):
         size /= power
         n += 1
     return str(size), power_labels[n] + 'B'
@@ -49,8 +50,10 @@ file_size = str(file_size)
 
 
 def aligner_status(ToUpdate):
-    """Informs the user of the aligner selected
-    Requires ToUpdate and global variables defined at the start of Update.py """
+    """
+    Informs the user of the aligner selected
+    Requires ToUpdate and global variables defined at the start of Update.py
+    """
 
     if (ToUpdate == "empty"):
         print("No datasets to be updated were detected.\n")
@@ -80,10 +83,12 @@ def aligner_status(ToUpdate):
 
 
 def update_inform_user(ToUpdate):
-    """ Simply checks if there are any files to be updated and reports the file information, including
+    """
+    Simply checks if there are any files to be updated and reports the file information, including
     file size and filename.
 
-    Requires: ToUpdate"""
+    Requires: ToUpdate
+    """
 
     aligner = aligner_status(ToUpdate)
 
@@ -91,13 +96,13 @@ def update_inform_user(ToUpdate):
           "need to be updated have been detected:\n".format(str(number_threads), str(template_length)))
     for dataset in ToUpdate.keys():
         # If the dataset is not a genome dataset
-        if(dataset != "Genome"):
+        if (dataset != "Genome"):
             print("\t-Files detected in the {} dataset\n".format(dataset))
             # If there are files (len of dataset > 0), print the files out
-            if(len(ToUpdate[dataset]) != 0):
+            if (len(ToUpdate[dataset]) != 0):
                 for subfile in ToUpdate[dataset]:
                     # If the size of the file is lower than 1MB then print the below message
-                    if(subfile[2] == "1"):
+                    if (subfile[2] == "1"):
                         print("\t\t--{} (<1 MB)\n".format(subfile[0]))
                     # Alternatively, print the below if >1MB
                     else:
@@ -109,15 +114,15 @@ def update_inform_user(ToUpdate):
 
     # Inform the user that the update will start now
     # If the file size of the genome data is 1 Mb perform the following:
-    if(ToUpdate["Genome"][0][2] == "1"):
-        if(float(file_size) == 1):
+    if (ToUpdate["Genome"][0][2] == "1"):
+        if (float(file_size) == 1):
             print("\n*** NOW STARTING UPDATE OF THE REPOSITORY: {} (<1 MB) ---> {} (<1 MB)***\n"
                   .format(ToUpdate["Genome"][0][0], os.path.basename(new_assembly)))
         else:
             print("\n*** NOW STARTING UPDATE OF THE REPOSITORY: {} (<1 MB) ---> {} ({} {})***\n"
                   .format(ToUpdate["Genome"][0][0], os.path.basename(new_assembly), file_size, label))
     else:
-        if(file_size == "1"):
+        if (file_size == "1"):
             print("\n*** NOW STARTING UPDATE OF THE REPOSITORY: {} ({} MB) --> {} (<1 MB)***\n"
                   .format(ToUpdate["Genome"][0][0], ToUpdate["Genome"][0][2],
                           os.path.basename(new_assembly)))
@@ -128,14 +133,15 @@ def update_inform_user(ToUpdate):
 
 
 def reconstruct_annotation_variants(ToUpdate):
-    """ Reconstructs the variant and annotation dataset in the temporary directory.
-
+    """
+    Reconstructs the variant and annotation dataset in the temporary directory.
     Requires: ToUpdate ({dataset:[[filename.extension,directory,size],[],...]}) which contains INFORMATION
-    of what requires updating. """
+    of what requires updating.
+    """
 
     for dataset in ToUpdate.keys():
         # If the data are variants and annotation datasets, and there is data present, perform the following block
-        if(dataset != "Genome" and len(ToUpdate[dataset]) != 0):
+        if (dataset != "Genome" and len(ToUpdate[dataset]) != 0):
             # Loop through the files of the dataset and reconstruct the file in the temporary
             # directory with the same original name
             for subfile in ToUpdate[dataset]:
@@ -144,7 +150,7 @@ def reconstruct_annotation_variants(ToUpdate):
                     mode=dataset, update=True, seqID="0", region="0")
                 # Create an appropiate tabix library for the file. If it is annotation or
                 # alignment there are two pseudo files
-                if(dataset == "Annotation" or dataset == "Alignment"):
+                if (dataset == "Annotation" or dataset == "Alignment"):
                     # Get all the headers (starts wiht #) for the alignment files, and all non header data,
                     # sort column 1 and column 2 (numerically).
                     # Then compress and create indexes and use tabix to create the library
@@ -157,7 +163,7 @@ def reconstruct_annotation_variants(ToUpdate):
                           "sort -V -k1,1 -k2,2n) | bgzip > ./temporary_directory/{}_B.gz; "
                           "tabix -b 2 -e 2 ./temporary_directory/{}_B.gz;"
                           .format(subfile[0], subfile[0], subfile[0], subfile[0]), shell=True).wait()
-                elif(dataset == "Variants"):
+                elif (dataset == "Variants"):
                     # Same as above but with variant data instead
                     Popen("(grep ""^#"" ./temporary_directory/{}_A; grep -v ""^#"" ./temporary_directory/{}_A | "
                           "sort -V -k1,1 -k2,2n) | bgzip > ./temporary_directory/{}_A.gz; "
@@ -170,13 +176,15 @@ def reconstruct_annotation_variants(ToUpdate):
 
 
 def obtain_variables(alignment_pickle):
-    """ This function will obtain the alignment if present, otherwise it'll call to perform a new alignment if not present.
+    """
+    This function will obtain the alignment if present, otherwise it'll call to perform a new alignment if not present.
     It will return the variables obtained, including the new alignment if performed.
 
-    Requires: alignment_pickle"""
+    Requires: alignment_pickle
+    """
 
     # If there is an alignment already stored in the repository
-    if(os.path.isdir(alignment_pickle)):
+    if (os.path.isdir(alignment_pickle)):
         # Inform the user
         print("\n\t*PART II. OBTAINING GENOME ALIGNMENT: STORED ALIGNMENT DETECTED, NOW LOADING SAVED DATA.*")
         print("\t" + str(datetime.datetime.now()))
@@ -195,16 +203,15 @@ def obtain_variables(alignment_pickle):
                                      kmer=kmer, segLength=segLength, c_flag=c_flag, b_flag=b_flag, ms_flag=ms_flag)
     return variables
 
+
 ####################################################
 # PART 0.DETERMINE FILES THAT NEED TO BE UPDATED #
 ####################################################
-
 
 # Determine the files to be updated. ToUpdate = {dataset:[[filename.extension,directory,size],[],...]}
 ToUpdate = detect_updates("./RepoMap.txt")
 # If the there are no files to update, inform the user
 update_inform_user(ToUpdate)
-
 
 ###############################################
 # PART 1. RECONSTRUCTION OF REPOSITORY DATA #

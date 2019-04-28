@@ -1,0 +1,80 @@
+#!/usr/bin/env python3
+from pyfaidx import Fasta
+import os
+import sys
+
+
+def check_variant_list(variant_list, fasta_file, seqID, outfile):
+    corr_count, false_count = 0, 0
+    try:
+        seq = str(Fasta(fasta_file)[seqID])
+        for pos, base in variant_list:
+            start_pos = int(pos) - 1
+            end_pos = start_pos + len(base)
+            fasta_base = seq[int(pos) - 1:end_pos]
+            if base.upper() == fasta_base.upper():
+                corr_count += 1
+            else:
+                false_count += 1
+                outfile.write(
+                    f'chr: {seqID}\tpos: {pos}\tvcf_base: {base}\tfasta_base: {fasta_base}\n')
+    except KeyError:
+        pass
+    return corr_count, false_count
+
+
+def add_summary_header(file, vcf_name, fasta_name, corr_count, false_count):
+    sum = corr_count + false_count
+    corr_percent = round(100 * corr_count / sum, 2)
+    false_percent = round(100 * false_count / sum, 2)
+    os.rename(file, 'temp')
+    print(f'\n------------- DONE -------------\ncorrect bases: {corr_count} ({corr_percent}%)\n'
+          f'false bases: {false_count} ({false_percent}%)\n'
+          f'Incorrect bases written to: {file}\n')
+    with open('temp', 'r') as infile, open(file, 'w') as outfile:
+        outfile.write(f'comparison of {vcf_name} and {fasta_name}:\n'
+                      f'correct bases: {corr_count} ({corr_percent}%)\n'
+                      f'false bases: {false_count} ({false_percent}%)\n'
+                      f'------------------\n\nIncorrect bases:\n')
+        for line in infile:
+            outfile.write(line)
+    os.remove('temp')
+
+
+# vcf_file_name = 'toy_genome_v1.vcf'
+vcf_file_name = sys.argv[1]
+# fasta_file_name = 'toy_genome_v1.fa'
+fasta_file_name = sys.argv[2]
+out_file_name = 'vcf_check.out' if len(sys.argv) != 4 else sys.argv[3]
+
+if os.path.isfile(out_file_name):
+    os.remove(out_file_name)
+
+variant_list = []
+prev_chr = None
+corr_count, false_count = 0, 0
+with open(vcf_file_name, 'r') as vcf_file, open(out_file_name, 'w') as outfile:
+    for line in vcf_file:
+        if line[0] != '#':
+            chr, pos, _, ref_base = line.split()[0:4]
+            if chr != prev_chr and prev_chr is not None:
+                # iterated through all variants of this chromosome,
+                # pass them to the check function and reset the list
+                corr, false = check_variant_list(
+                    variant_list, fasta_file_name, prev_chr, outfile)
+                corr_count += corr
+                false_count += false
+                variant_list = []
+                print(f'{prev_chr} processed')
+            variant_list.append((pos, ref_base))
+            prev_chr = chr
+    # also check the last chromosome
+    corr, false = check_variant_list(
+        variant_list, fasta_file_name, prev_chr, outfile)
+    corr_count += corr
+    false_count += false
+    variant_list = []
+    print(f'{prev_chr} processed')
+
+add_summary_header(out_file_name, vcf_file_name,
+                   fasta_file_name, corr_count, false_count)

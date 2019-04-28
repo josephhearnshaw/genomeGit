@@ -27,7 +27,7 @@ genomeGit 3.0 also makes use of the following Python modules:
 ### Installation
 In order to be able to run the program anywhere on your system, the location of the *GenomeGit* directory must be in the *$PATH* variable. Therefore, you can install it by either one of the following two methods:
 #### Temporary solution
-You can temporarily append the *GenomeGit* directory to the *$PATH* variable by executing ```PATH=$PATH:directory```, where ```directory``` repersents the location of the *GenomeGit* directory. The user may need to make the main script executable using ```chmod u+x <path_to_GenomeGit>/genomegit```. 
+You can temporarily append the *genomeGit* directory to the *$PATH* variable by executing ```PATH=$PATH:directory```, where ```directory``` repersents the location of the *GenomeGit* directory. The user may need to make the main script executable using ```chmod u+x <path_to_GenomeGit>/genomegit```. 
 
 However, please note that using this method is only a short-term solution. When your terminal, or machine is closed/switched off, you'll have to redo this.
 
@@ -37,9 +37,9 @@ It's recommended to use the ```genomegit_install``` executable file, provided wi
 
 To uninstall genomeGit, remove the genomeGit directory from your PC and then remove the symlink using the following: ```sudo rm /usr/bin/genomegit```.
 
-## Running GenomeGit
+## Running genomeGit
 
-To display the GenomeGit welcome message, execute ```genomegit```.
+To display the genomeGit welcome message, execute ```genomegit```.
 
 Please note that genomeGit can make use of Git commands, executed as follows: ```genomegit <git_command>```. [See git documentation for further information on how to use git.](https://git-scm.com/doc)
 
@@ -104,7 +104,7 @@ To view the difference between two versions of the genomic data present within t
 The user can alternatively use ```--message=<message>``` if they used a commit message instead. The number of threads can be provided using ```genomegit diff --threads``` or ```--t=<x>```, as previously described. This might prove useful when comparing non-consecutive versions, as comparisons of assembly versions may need to be performed. ```genomegit log``` will provide a list of commits with their hashes.
 
 ## Common commands
-#### Installing GenomeGit
+#### Installing genomeGit
 ```bash /path/to/directory/genomegit_install```
 #### Initiating an empty repository, or cloning it
 ```genomegit init```

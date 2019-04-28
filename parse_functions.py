@@ -376,7 +376,7 @@ def parse_dataset(dataset, input_path, size, update):
             with open("../RepoMap.txt", "a") as repomap:
                 # Write the information corresponding with the added file
                 repomap.write(os.path.basename(input_path) + "\t" + dataset
-                              + "\t" + "./" + dataset + "\t" + line_size + "\t" + size + "\n")
+                              + "\t" + "./" + dataset + "\t" + line_size + "\t" + "{} {}\n".format(size, label))
             # Close the file
             repomap.close()
 
@@ -467,7 +467,7 @@ def parse_dataset(dataset, input_path, size, update):
             with open("../../RepoMap.txt", "a") as repomap:
                 # Write the information corresponding with the added file
                 repomap.write(os.path.basename(input_path) + "\t" + dataset + "\t" + "./"
-                              + dataset + "/" + os.path.basename(input_path) + "\t1\t" + size + "\n")
+                              + dataset + "/" + os.path.basename(input_path) + "\t1\t" + "{} {}\n".format(size, label))
             # Close the file
             repomap.close()
 
@@ -558,7 +558,7 @@ def parse_dataset(dataset, input_path, size, update):
             with open("../../RepoMap.txt", "a") as repomap:
                 # Write the information corresponding with the added file
                 repomap.write(os.path.basename(input_path) + "\t" + dataset + "\t" + "./"
-                              + dataset + "/" + os.path.basename(input_path) + "\t1\t" + size + "\n")
+                              + dataset + "/" + os.path.basename(input_path) + "\t1\t" + "{} {}\n".format(size, label))
             # Close the file
             repomap.close()
 
@@ -606,7 +606,7 @@ def parse_dataset(dataset, input_path, size, update):
             repomap = open("../../RepoMap.txt", "a")
             # Write the information corresponding with the added file
             repomap.write(os.path.basename(input_path) + "\t" + dataset + "\t" + "./"
-                          + dataset + "/" + os.path.basename(input_path) + "\t1\t" + size + "\n")
+                          + dataset + "/" + os.path.basename(input_path) + "\t1\t" + "{} {}\n".format(size, label))
         # Create a comment file to store the comments at the begining of the file
         comment_file = open("./Comments.txt", "w")
         # Open the sam file

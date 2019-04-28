@@ -101,35 +101,17 @@ def update_inform_user(ToUpdate):
             # If there are files (len of dataset > 0), print the files out
             if (len(ToUpdate[dataset]) != 0):
                 for subfile in ToUpdate[dataset]:
-                    # If the size of the file is lower than 1MB then print the below message
-                    if (subfile[2] == "1"):
-                        print("\t\t--{} (<1 MB)\n".format(subfile[0]))
-                    # Alternatively, print the below if >1MB
-                    else:
-                        print(
-                            "\t\t--{} ({} {})\n".format(subfile[0], subfile[2], label))
+                    print("\t\t--{} ({})\n".format(subfile[0], subfile[2]))
             # If there are no files in this dataset, inform the user
             else:
                 print("\t\t--No files detected in this {} dataset.\n".format(dataset))
 
     # Inform the user that the update will start now
     # If the file size of the genome data is 1 Mb perform the following:
-    if (ToUpdate["Genome"][0][2] == "1"):
-        if (float(file_size) == 1):
-            print("\n*** NOW STARTING UPDATE OF THE REPOSITORY: {} (<1 MB) ---> {} (<1 MB)***\n"
-                  .format(ToUpdate["Genome"][0][0], os.path.basename(new_assembly)))
-        else:
-            print("\n*** NOW STARTING UPDATE OF THE REPOSITORY: {} (<1 MB) ---> {} ({} {})***\n"
-                  .format(ToUpdate["Genome"][0][0], os.path.basename(new_assembly), file_size, label))
-    else:
-        if (file_size == "1"):
-            print("\n*** NOW STARTING UPDATE OF THE REPOSITORY: {} ({} MB) --> {} (<1 MB)***\n"
-                  .format(ToUpdate["Genome"][0][0], ToUpdate["Genome"][0][2],
-                          os.path.basename(new_assembly)))
-        else:
-            print("\n*** NOW STARTING UPDATE OF THE REPOSITORY: {} ({} MB) ---> {} ({} {})***\n"
-                  .format(ToUpdate["Genome"][0][0], ToUpdate["Genome"][0][2],
-                          os.path.basename(new_assembly), file_size, label))
+
+    print("\n*** NOW STARTING UPDATE OF THE REPOSITORY: {} ({}) ---> {} ({} {})***\n"
+          .format(ToUpdate["Genome"][0][0], ToUpdate["Genome"][0][2],
+                  os.path.basename(new_assembly), file_size, label))
 
 
 def reconstruct_annotation_variants(ToUpdate):

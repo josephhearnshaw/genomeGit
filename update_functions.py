@@ -11,11 +11,8 @@ def detect_updates(map_path):
 
     # Initiate empty variable and empty dictionary {dataset:[[filename.extension,directory,size],[...]]}
     empty = True
-    ToUpdate = {}
-    ToUpdate["Genome"] = []
-    ToUpdate["Annotation"] = []
-    ToUpdate["Variants"] = []
-    ToUpdate["Alignment"] = []
+    ToUpdate = {"Genome": [], "Annotation": [], "Variants": [], "Alignment": []}
+
     # Open the repomap
     with open(map_path, "r") as repomap:
         # Loop through the lines of the repomap

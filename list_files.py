@@ -15,7 +15,7 @@ with open(str(sys.argv[1]), "r") as repomap:
         line = line.split("\t")
         # Save the name of the file on its corresponding dataset.
         dataset_dict[line[1]].append("{} ({})".format(
-            line[0], line[4].rstrip() + " MB"))
+            line[0], line[4].rstrip()))
 
 # Print a table with the files for each dataset. Loop through all the datasets.
 for dataset in dataset_dict.keys():

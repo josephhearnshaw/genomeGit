@@ -25,17 +25,13 @@ genomeGit 3.0 also makes use of the following Python modules:
  * [pyfaidx 0.5.5.2](https://pypi.org/project/pyfaidx/)
 
 ### Installation
-In order to be able to run the program anywhere on your system, the location of the *genomegit* directory must be in the *$PATH* variable. Therefore, you can install it by either one of the following two methods:
+In order to be able to run the program anywhere on your system, run ```genomegit_install```. This wil lcreate a symlink for genomegit in the /usr/bin directory. You may need to make the main script executable using ```chmod u+x <path_to_genomeGit>/genomeigt```.
 #### Temporary solution
 You can temporarily append the *genomegit* directory to the *$PATH* variable by executing ```PATH=$PATH:directory```, where ```directory``` repersents the location of the *genomeGit* directory. The user may need to make the main script executable using ```chmod u+x <path_to_genomeGit>/genomegit```. 
 
-However, please note that using this method is only a short-term solution. When your terminal, or machine is closed/switched off, you'll have to redo this.
-
-#### Recommended solution
-It's recommended to use the ```genomegit_install``` executable file, provided with genomeGit 3.0. Execute this to create a symlink to genomegit in the ```/usr/bin/ directory``` directory. Again, you may need to make genomegit executable via chmod.
 #### Uninstalling genomeGit 3.0
 
-To uninstall genomeGit, remove the genomeGit directory from your PC and then remove the symlink using the following: ```sudo rm /usr/bin/genomegit```.
+To uninstall genomeGit, remove the genomeGit directory from your PC and then remove the symlink using the following: ```rm -rf ./genomegit``` and  then ```sudo rm /usr/bin/genomegit```.
 
 ## Running genomeGit
 
@@ -43,7 +39,7 @@ To display the genomeGit welcome message, execute ```genomegit```.
 
 Please note that genomeGit can make use of Git commands, executed as follows: ```genomegit <git_command>```. [See git documentation for further information on how to use git.](https://git-scm.com/doc)
 
-To get the list of genomeGit commands, execute ```genomegit help```.
+To get the list of all available genomeGit commands, execute ```genomegit help```.
 
 ### 1. Initializing the repository
 The repository can be initialized by executing ```genomegit init```, creating a *.gnmgit* directory. 
@@ -57,14 +53,14 @@ To add files into the repository, execute ```genomegit add <file>``` and ```geno
 #### Additional ```add``` arguments for lift-over
 Additional arguments can be passed to ```genomegit add <file>```, such at the number of threads (```--t=<x>``` or ```--thread=<x>```),  and the aligner you wish to use (```--a=<1 or 2>``` or ```--aligner=<1 or 2>```, where 1 will run the hybrid aligner and 2 runs Nucmer4 only). 
 #### Specific aligner-related flags
-Flags specific to Nucmer4 (```--c=<x>``` or ```--mincluster=<x>```) can be used ([see the NUCmer documentation for information regarding these flags](http://mummer.sourceforge.net/manual/#nucmer)). 
+Flags specific to NUCmer4 (```--c=<x>``` or ```--mincluster=<x>```) can be used ([see the NUCmer documentation for information regarding these flags](http://mummer.sourceforge.net/manual/#nucmer)). 
 
 Likewise, the flags ```--k=<x>``` or ```--kmer=<x>``` and ```--s=<x>``` or ```--segLength=<x>``` and ```--pi=<x>``` can be used for MashMap2 ([see the MashMap GitHub page for information regarding these flags](https://github.com/marbl/MashMap)). 
 
 #### Splits and merges related flags
 For the hyrid alignment, the user can also use the flag ```--ms=<x>``` as either 1 or 2, where 2 will also detect merges (but not splits). By default, it'll detect splits (```--ms=1```). 
 
-Using only Nucmer4 will result in the detection of both splits and merges. 
+Using only NUCmer4 will result in the detection of both splits and merges. 
 
 #### Obtaining a report of lifted over assemblies
 genomeGit 3.0 will automatically classify the file inputted and parse it into it's respective Git-compatible sub-files, within the Git repository. A summary of the charactersticis of the data within the repository can be visualised using the command ```genomegit report```. 

@@ -15,10 +15,10 @@ In addition, genomeGit 3.0 is faster, more accurate, can handle inversions, and 
 ### Prerequisites for genomeGit 3.0
 The following dependencies are required: 
 * [Python v 2.7+](https://www.python.org/)
-* [Git](https://git-scm.com/downloads)
+* [Git 2.7.4](https://git-scm.com/downloads)
 * [MUMmer 4.0](https://mummer4.github.io/)
 * [MashMap 2.0](https://github.com/marbl/MashMap)
-* [Tabix](http://www.htslib.org/doc/tabix.html)
+* [Tabix 1.9](http://www.htslib.org/doc/tabix.html)
 
 genomeGit 3.0 also makes use of the following Python modules: 
  * [pytabix 0.1](https://pypi.org/project/pytabix/)

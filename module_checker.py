@@ -1,3 +1,4 @@
+#!/usr/bin/env python2
 import subprocess
 import sys
 
@@ -14,7 +15,7 @@ def check_mod(module):
     else:
         print("\n***{} wasn't found for Python 2.7+,"
               " you may need to install it for "
-              "GenomeGit 3.0 to work properly.***\n".format(module))
+              "genomeGit 3.0 to work properly.***\n".format(module))
 
 
 # Obtain output form pip as list

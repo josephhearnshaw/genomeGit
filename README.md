@@ -27,7 +27,7 @@ genomeGit 3.0 also makes use of the following Python modules:
 ### Installation
 In order to be able to run the program anywhere on your system, the location of the *genomegit* directory must be in the *$PATH* variable. Therefore, you can install it by either one of the following two methods:
 #### Temporary solution
-You can temporarily append the *genomegit* directory to the *$PATH* variable by executing ```PATH=$PATH:directory```, where ```directory``` repersents the location of the *GenomeGit* directory. The user may need to make the main script executable using ```chmod u+x <path_to_GenomeGit>/genomegit```. 
+You can temporarily append the *genomegit* directory to the *$PATH* variable by executing ```PATH=$PATH:directory```, where ```directory``` repersents the location of the *genomeGit* directory. The user may need to make the main script executable using ```chmod u+x <path_to_genomeGit>/genomegit```. 
 
 However, please note that using this method is only a short-term solution. When your terminal, or machine is closed/switched off, you'll have to redo this.
 
